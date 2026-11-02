@@ -1,97 +1,91 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# NEXUS NEWS 24 — Professional News Broadcasting Application
 
-# Getting Started
+**Truth Unfiltered • 24/7 Global Stream**  
+*React Native | TypeScript | 100% Frontend-Only | Offline-Ready Architecture*
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## 📌 Project Overview
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+**Nexus News 24** is a newly developed, production-grade television news broadcasting application built from scratch for Android and iOS using **React Native CLI (0.88.1)**. 
 
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+The application is situated in its dedicated, isolated workspace:
 ```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+/Users/nikita/Documents/Data/Nikita/Projects/NexusNews24
 ```
+It does not touch, modify, or interfere with any other projects in the environment.
 
-### iOS
+---
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## ⚡ Architecture & Key Features
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+### 1. 100% Frontend-Only & Zero Server Dependency
+- **Offline First:** All images, videos, articles, categories, and notifications are bundled locally within the application package.
+- **No external network required:** Functions in airplane mode without remote APIs, Firebase, or external streaming servers.
+- **Local Persistence:** Bookmarks, search query history, and theme settings are managed via `@react-native-async-storage/async-storage`.
 
-```sh
-bundle install
+### 2. Simulated 24/7 Live Television Broadcasting
+- Continuous looping broadcast player simulating live television studio output.
+- Dynamic lower-third graphics: Current bulletin, Anchor tag, Clock, and scrolling Breaking News marquee.
+- Channel metadata with Live Viewer Counter (`2.4M Watching`), Ultra HD badge, and full audio/pause controls.
+- Broadcast schedule featuring real-time "ON AIR" program status and upcoming line-ups.
+
+### 3. Recorded News Video Clips
+- Video catalog across Technology, Business, National, and Sports beats.
+- Dedicated video player with interactive timeline scrub bar, play/pause controls, and volume toggles.
+- Duration tags, view counters, and native sharing.
+
+### 4. Vertical Short News Feed (Nexus Shorts ⚡)
+- Full-screen vertical reels feed (9:16 aspect ratio).
+- Auto-play on visible card, auto-pause on scroll.
+- Interactive engagement overlay: Like counter toggle, Share, and Bookmark.
+
+### 5. Breaking News Bulletin Center
+- Urgent red alert identity with pulse indicator.
+- Priority classification (`CRITICAL`, `HIGH`, `FLASH`).
+- Instant shareable alerts.
+
+### 6. Comprehensive Editorial Beats (12 Categories)
+1. **National** (🇮🇳)
+2. **International** (🌐)
+3. **Gujarat** (🏛️)
+4. **Ahmedabad** (🏙️)
+5. **Politics** (⚖️)
+6. **Business** (📈)
+7. **Sports** (🏆)
+8. **Entertainment** (🎬)
+9. **Technology** (💻)
+10. **Education** (📚)
+11. **Health** (🩺)
+12. **Lifestyle** (🌿)
+
+### 7. Instant Offline Search
+- Real-time client-side keyword and category search across all 30 bundled articles.
+- Recent search tags with history management and clear cache action.
+
+### 8. Theming Engine (Light & Dark Mode)
+- Full application-wide support for deep navy dark mode and clean paper white light mode.
+- System automatic preference syncing or manual toggle with persistent storage.
+
+---
+
+## 📱 Build & Installation Instructions
+
+### Android Execution
+
+```bash
+# 1. Navigate to project root
+cd /Users/nikita/Documents/Data/Nikita/Projects/NexusNews24
+
+# 2. Build Debug APK
+cd android && ./gradlew assembleDebug
+
+# 3. Build Release Standalone APK
+cd android && ./gradlew assembleRelease
+
+# 4. Install onto emulator or connected device
+adb -s <device_id> install -r app/build/outputs/apk/release/app-release.apk
+
+# 5. Launch application
+adb -s <device_id> shell am start -n com.nexusnews24/.MainActivity
 ```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
