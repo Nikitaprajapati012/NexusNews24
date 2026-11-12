@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,12 +18,14 @@ import { TrendingCarousel } from '../../components/news/TrendingCarousel';
 import { NewsCard } from '../../components/news/NewsCard';
 import { CATEGORIES } from '../../data/categoriesData';
 import {
-  ALL_NEWS_ARTICLES,
+  NewsArticle,
   getFeaturedArticles,
   getTrendingArticles,
   getArticlesByCategory,
 } from '../../data/newsData';
-import { SHORT_NEWS_FEED } from '../../data/shortsData';
+import { fetchLiveNewsByCategory } from '../../services/newsService';
+import { SHORT_NEWS_FEED, ShortNewsItem } from '../../data/shortsData';
+import { fetchLiveShorts } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius } from '../../theme/spacing';
 
@@ -32,14 +34,64 @@ export const HomeScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [shortsFeed, setShortsFeed] = useState<ShortNewsItem[]>(SHORT_NEWS_FEED);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>(() => getArticlesByCategory('all'));
+  const [categoryArticles, setCategoryArticles] = useState<NewsArticle[]>(() =>
+    getArticlesByCategory('all'),
+  );
 
-  const featuredArticles = getFeaturedArticles();
-  const trendingArticles = getTrendingArticles();
-  const categoryArticles = getArticlesByCategory(selectedCategory);
+  const loadTopStories = useCallback(async (forceRefresh = false) => {
+    const liveAll = await fetchLiveNewsByCategory('all', forceRefresh);
+    setAllArticles(liveAll);
+    if (selectedCategory === 'all') {
+      setCategoryArticles(liveAll);
+    }
+  }, [selectedCategory]);
 
-  const onRefresh = () => {
+  useEffect(() => {
+    let active = true;
+    fetchLiveNewsByCategory('all').then(liveAll => {
+      if (active) setAllArticles(liveAll);
+    });
+    fetchLiveShorts().then(liveShorts => {
+      if (active && liveShorts.length > 0) setShortsFeed(liveShorts);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveNewsByCategory(selectedCategory).then(articles => {
+      if (active) setCategoryArticles(articles);
+    });
+    return () => {
+      active = false;
+    };
+  }, [selectedCategory]);
+
+  const featuredArticles = allArticles.filter(a => a.isFeatured);
+  const trendingArticles = allArticles.filter(a => a.isTrending);
+  const displayFeatured =
+    featuredArticles.length > 0 ? featuredArticles : allArticles.slice(0, 1);
+  const displayTrending =
+    trendingArticles.length > 0
+      ? trendingArticles
+      : allArticles.slice(1, 6).length > 0
+      ? allArticles.slice(1, 6)
+      : getTrendingArticles();
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+    try {
+      await Promise.all([
+        loadTopStories(true),
+        fetchLiveNewsByCategory(selectedCategory, true).then(setCategoryArticles),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -83,8 +135,8 @@ export const HomeScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
             TOP HEADLINE
           </Text>
-          {featuredArticles.length > 0 && (
-            <FeaturedNewsCard article={featuredArticles[0]} />
+          {displayFeatured.length > 0 && (
+            <FeaturedNewsCard article={displayFeatured[0]} />
           )}
         </View>
 
@@ -99,7 +151,7 @@ export const HomeScreen: React.FC = () => {
             </View>
             <Text style={[styles.subCount, { color: colors.textMuted }]}>Top 5 Viral</Text>
           </View>
-          <TrendingCarousel articles={trendingArticles} />
+          <TrendingCarousel articles={displayTrending} />
         </View>
 
         {/* Vertical Short News Carousel */}
@@ -124,7 +176,7 @@ export const HomeScreen: React.FC = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.shortsScroll}
           >
-            {SHORT_NEWS_FEED.map((short, idx) => (
+            {shortsFeed.map((short, idx) => (
               <TouchableOpacity
                 key={short.id}
                 style={styles.shortThumbCard}

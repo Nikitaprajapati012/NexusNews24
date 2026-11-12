@@ -1,13 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { VerticalShortCard } from '../../components/video/VerticalShortCard';
-import { SHORT_NEWS_FEED } from '../../data/shortsData';
+import { SHORT_NEWS_FEED, ShortNewsItem } from '../../data/shortsData';
+import { fetchLiveShorts } from '../../services/videoService';
 import { AppHeader } from '../../components/common/AppHeader';
 import { useTheme } from '../../theme/ThemeContext';
 
 export const ShortNewsScreen: React.FC = () => {
   const { colors } = useTheme();
+  const [shorts, setShorts] = useState<ShortNewsItem[]>(SHORT_NEWS_FEED);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveShorts().then(live => {
+      if (active && live.length > 0) {
+        setShorts(live);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index !== null) {
@@ -23,7 +37,7 @@ export const ShortNewsScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]}>
       <AppHeader showDate={false} />
       <FlatList
-        data={SHORT_NEWS_FEED}
+        data={shorts}
         keyExtractor={item => item.id}
         renderItem={({ item, index }) => (
           <VerticalShortCard item={item} isActive={index === activeIndex} />

@@ -14,6 +14,7 @@ export interface NewsArticle {
   paragraphs: string[];
   image: any;
   relatedIds: string[];
+  sourceUrl?: string;
 }
 
 export const ALL_NEWS_ARTICLES: NewsArticle[] = [

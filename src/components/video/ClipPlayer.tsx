@@ -14,6 +14,11 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
   const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const posterUri =
+    typeof clip.thumbnail === 'object' && clip.thumbnail?.uri
+      ? clip.thumbnail.uri
+      : undefined;
+
   return (
     <View style={styles.container}>
       <Video
@@ -23,6 +28,8 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
         repeat={true}
         paused={paused}
         muted={muted}
+        poster={posterUri}
+        posterResizeMode="cover"
         onProgress={e => {
           if (e.seekableDuration > 0) {
             setProgress(e.currentTime / e.seekableDuration);

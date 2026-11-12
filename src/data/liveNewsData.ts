@@ -8,16 +8,18 @@ export interface BroadcastProgram {
 
 export const LIVE_BROADCAST_DETAILS = {
   channelName: 'NEXUS NEWS 24',
-  tagline: 'Truth Unfiltered • 24/7 Global Stream',
-  currentProgram: 'Prime Time World Bulletin',
-  currentAnchor: 'Elena Vance & Kabir Mehta',
-  currentLocation: 'Studio 1 - Global Broadcast Hub',
+  tagline: 'Truth Unfiltered • 24/7 Global Live Feed',
+  currentProgram: 'World News Live • 24/7 Broadcast',
+  currentAnchor: 'Global News Desk',
+  currentLocation: 'Studio 1 - 24/7 Live Satellite Stream',
   liveViewers: '2.4M Watching',
-  videoSource: require('../assets/videos/live_stream.mp4'),
+  videoSource: {
+    uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+  },
   lowerThirds: [
     'BREAKING: GLOBAL CLIMATE ACCORD SIGNED IN GENEVA',
-    'MARKET UPDATE: SENSEX SOARS 1,240 POINTS TO HISTORIC HIGH',
-    'TECH FOCUS: INDEPENDENT QUANTUM GRID PASSES STRESS TEST',
+    'MARKET UPDATE: SENSEX CROSSES HISTORIC 90,000 MARK',
+    'TECH FOCUS: ADVANCED AI INFRASTRUCTURE COMES ONLINE',
   ],
   schedule: [
     { id: 'sch-1', time: '18:00 - 19:00', title: 'Global Evening Report', anchor: 'Aarav Sharma', isCurrent: false },

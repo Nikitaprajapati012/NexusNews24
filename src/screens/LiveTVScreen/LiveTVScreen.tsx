@@ -40,7 +40,7 @@ export const LiveTVScreen: React.FC = () => {
           <View style={styles.serverStatus}>
             <View style={styles.greenDot} />
             <Text style={[styles.serverText, { color: colors.success }]}>
-              OFFLINE STREAM ACTIVE
+              LIVE SATELLITE FEED ONLINE
             </Text>
           </View>
         </View>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,19 +12,34 @@ import {
 import { AppHeader } from '../../components/common/AppHeader';
 import { ClipPlayer } from '../../components/video/ClipPlayer';
 import { RECORDED_CLIPS, RecordedClip } from '../../data/clipsData';
+import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
 export const NewsClipsScreen: React.FC = () => {
   const { colors } = useTheme();
+  const [allClips, setAllClips] = useState<RecordedClip[]>(RECORDED_CLIPS);
   const [selectedClip, setSelectedClip] = useState<RecordedClip>(RECORDED_CLIPS[0]);
   const [selectedCat, setSelectedCat] = useState<string>('All');
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveClips().then(live => {
+      if (active && live.length > 0) {
+        setAllClips(live);
+        setSelectedClip(live[0]);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const categories = ['All', 'Technology', 'Business', 'National', 'Sports'];
 
   const filteredClips = selectedCat === 'All'
-    ? RECORDED_CLIPS
-    : RECORDED_CLIPS.filter(c => c.category.toLowerCase() === selectedCat.toLowerCase());
+    ? allClips
+    : allClips.filter(c => c.category.toLowerCase() === selectedCat.toLowerCase());
 
   const handleShareClip = async (clip: RecordedClip) => {
     try {

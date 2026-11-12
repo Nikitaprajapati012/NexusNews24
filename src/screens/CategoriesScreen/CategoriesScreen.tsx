@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,16 +10,28 @@ import {
 import { AppHeader } from '../../components/common/AppHeader';
 import { NewsCard } from '../../components/news/NewsCard';
 import { CATEGORIES } from '../../data/categoriesData';
-import { getArticlesByCategory } from '../../data/newsData';
+import { getArticlesByCategory, NewsArticle } from '../../data/newsData';
+import { fetchLiveNewsByCategory } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
 export const CategoriesScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedCatId, setSelectedCatId] = useState('all');
+  const [articles, setArticles] = useState<NewsArticle[]>(() => getArticlesByCategory('all'));
 
   const activeCategory = CATEGORIES.find(c => c.id === selectedCatId) || CATEGORIES[0];
-  const articles = getArticlesByCategory(selectedCatId);
+
+  useEffect(() => {
+    let active = true;
+    setArticles(getArticlesByCategory(selectedCatId));
+    fetchLiveNewsByCategory(selectedCatId).then(liveArticles => {
+      if (active) setArticles(liveArticles);
+    });
+    return () => {
+      active = false;
+    };
+  }, [selectedCatId]);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>

@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
 import Video from 'react-native-video';
 import { LIVE_BROADCAST_DETAILS } from '../../data/liveNewsData';
+import { fetchLiveBreakingNews } from '../../services/newsService';
 import { getLiveBroadcastTime } from '../../utils/dateFormatter';
 import { spacing } from '../../theme/spacing';
+
+const LOCAL_FALLBACK_VIDEO = require('../../assets/videos/live_stream.mp4');
 
 interface Props {
   compact?: boolean;
@@ -15,6 +18,20 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
   const [muted, setMuted] = useState(false);
   const [clock, setClock] = useState(getLiveBroadcastTime());
   const [tickerIndex, setTickerIndex] = useState(0);
+  const [videoSource, setVideoSource] = useState<any>(LIVE_BROADCAST_DETAILS.videoSource);
+  const [lowerThirds, setLowerThirds] = useState<string[]>(LIVE_BROADCAST_DETAILS.lowerThirds);
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveBreakingNews().then(items => {
+      if (active && items.length > 0) {
+        setLowerThirds(items.map(it => it.tickerText));
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const clockTimer = setInterval(() => {
@@ -22,19 +39,19 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
     }, 1000);
 
     const tickerTimer = setInterval(() => {
-      setTickerIndex(prev => (prev + 1) % LIVE_BROADCAST_DETAILS.lowerThirds.length);
-    }, 5000);
+      setTickerIndex(prev => (prev + 1) % lowerThirds.length);
+    }, 4500);
 
     return () => {
       clearInterval(clockTimer);
       clearInterval(tickerTimer);
     };
-  }, []);
+  }, [lowerThirds.length]);
 
   return (
     <View style={[styles.container, compact ? styles.compactContainer : styles.fullContainer]}>
       <Video
-        source={LIVE_BROADCAST_DETAILS.videoSource}
+        source={videoSource}
         style={styles.video}
         resizeMode="cover"
         repeat={true}
@@ -42,6 +59,12 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
         muted={muted}
         playInBackground={false}
         playWhenInactive={false}
+        onError={() => {
+          // If live HLS stream drops, fall back to offline stream
+          if (videoSource !== LOCAL_FALLBACK_VIDEO) {
+            setVideoSource(LOCAL_FALLBACK_VIDEO);
+          }
+        }}
       />
 
       {/* Top Overlay: Channel logo, LIVE badge, and Viewers */}
@@ -97,7 +120,7 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
             </View>
             <View style={styles.tickerHeadlineBox}>
               <Text style={styles.tickerHeadline} numberOfLines={1}>
-                {LIVE_BROADCAST_DETAILS.lowerThirds[tickerIndex]}
+                {lowerThirds[tickerIndex] || lowerThirds[0]}
               </Text>
             </View>
           </View>

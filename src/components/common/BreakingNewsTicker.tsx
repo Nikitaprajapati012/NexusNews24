@@ -1,21 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BREAKING_NEWS } from '../../data/breakingNewsData';
+import { BREAKING_NEWS, BreakingNewsItem } from '../../data/breakingNewsData';
+import { fetchLiveBreakingNews } from '../../services/newsService';
 import { spacing } from '../../theme/spacing';
 
 export const BreakingNewsTicker: React.FC = () => {
   const navigation = useNavigation<any>();
+  const [items, setItems] = useState<BreakingNewsItem[]>(BREAKING_NEWS);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % BREAKING_NEWS.length);
-    }, 4500);
-    return () => clearInterval(timer);
+    let active = true;
+    fetchLiveBreakingNews().then(liveItems => {
+      if (active && liveItems.length > 0) {
+        setItems(liveItems);
+        setCurrentIndex(0);
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const currentItem = BREAKING_NEWS[currentIndex];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % items.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [items.length]);
+
+  const currentItem = items[currentIndex] || items[0];
 
   return (
     <TouchableOpacity

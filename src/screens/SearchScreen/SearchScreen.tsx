@@ -12,6 +12,7 @@ import { SearchBar } from '../../components/common/SearchBar';
 import { NewsCard } from '../../components/news/NewsCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { searchArticlesOffline } from '../../utils/searchUtils';
+import { searchLiveNews } from '../../services/newsService';
 import {
   getSearchHistory,
   addSearchQuery,
@@ -40,6 +41,9 @@ export const SearchScreen: React.FC = () => {
       setResults(matches);
       if (text.trim().length > 3) {
         addSearchQuery(text).then(setHistory);
+        searchLiveNews(text).then(liveMatches => {
+          if (liveMatches.length > 0) setResults(liveMatches);
+        });
       }
     } else {
       setResults([]);
@@ -51,6 +55,9 @@ export const SearchScreen: React.FC = () => {
     const matches = searchArticlesOffline(tag);
     setResults(matches);
     addSearchQuery(tag).then(setHistory);
+    searchLiveNews(tag).then(liveMatches => {
+      if (liveMatches.length > 0) setResults(liveMatches);
+    });
   };
 
   const handleClearHistory = async () => {

@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   Share,
   SafeAreaView,
+  Linking,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { getArticleById, ALL_NEWS_ARTICLES, NewsArticle } from '../../data/newsData';
+import { getLiveArticleById } from '../../services/newsService';
 import { CategoryBadge } from '../../components/news/CategoryBadge';
 import { NewsCard } from '../../components/news/NewsCard';
 import { isArticleBookmarked, toggleBookmark } from '../../storage/bookmarkStorage';
@@ -23,7 +25,7 @@ export const NewsDetailsScreen: React.FC = () => {
   const { colors } = useTheme();
 
   const articleId = route.params?.articleId || 'art-1';
-  const article = getArticleById(articleId) || ALL_NEWS_ARTICLES[0];
+  const article = getLiveArticleById(articleId) || getArticleById(articleId) || ALL_NEWS_ARTICLES[0];
 
   const [bookmarked, setBookmarked] = useState(false);
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1);
@@ -47,7 +49,7 @@ export const NewsDetailsScreen: React.FC = () => {
   };
 
   const relatedArticles = article.relatedIds
-    .map(id => getArticleById(id))
+    .map(id => getLiveArticleById(id) || getArticleById(id))
     .filter((a): a is NewsArticle => a !== undefined);
 
   return (
@@ -148,6 +150,18 @@ export const NewsDetailsScreen: React.FC = () => {
               </Text>
             ))}
           </View>
+
+          {article.sourceUrl ? (
+            <TouchableOpacity
+              style={[styles.takeawaysCard, { backgroundColor: colors.accent, borderColor: colors.accent, alignItems: 'center' }]}
+              activeOpacity={0.85}
+              onPress={() => Linking.openURL(article.sourceUrl!)}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+                READ FULL STORY ON {article.author.toUpperCase()} ↗
+              </Text>
+            </TouchableOpacity>
+          ) : null}
 
           {/* Key Takeaways Box */}
           <View style={[styles.takeawaysCard, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>

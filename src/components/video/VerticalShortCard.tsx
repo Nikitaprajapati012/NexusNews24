@@ -24,6 +24,11 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
     } catch (e) {}
   };
 
+  const posterUri =
+    typeof item.thumbnail === 'object' && item.thumbnail?.uri
+      ? item.thumbnail.uri
+      : undefined;
+
   return (
     <View style={styles.container}>
       <Video
@@ -33,6 +38,8 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
         repeat={true}
         paused={!isActive || paused}
         muted={muted}
+        poster={posterUri}
+        posterResizeMode="cover"
       />
 
       {/* Tap anywhere to pause/resume */}

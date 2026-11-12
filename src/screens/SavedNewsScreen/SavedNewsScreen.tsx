@@ -12,6 +12,7 @@ import { NewsCard } from '../../components/news/NewsCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { getBookmarkedIds } from '../../storage/bookmarkStorage';
 import { getArticleById, NewsArticle } from '../../data/newsData';
+import { getLiveArticleById } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing } from '../../theme/spacing';
 
@@ -23,7 +24,7 @@ export const SavedNewsScreen: React.FC = () => {
   const loadBookmarks = async () => {
     const ids = await getBookmarkedIds();
     const articles = ids
-      .map(id => getArticleById(id))
+      .map(id => getLiveArticleById(id) || getArticleById(id))
       .filter((a): a is NewsArticle => a !== undefined);
     setBookmarkedArticles(articles);
   };

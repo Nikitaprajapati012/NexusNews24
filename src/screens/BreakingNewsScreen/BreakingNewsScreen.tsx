@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BREAKING_NEWS, BreakingNewsItem } from '../../data/breakingNewsData';
+import { fetchLiveBreakingNews } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
@@ -18,6 +19,19 @@ export const BreakingNewsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
   const [pulse, setPulse] = useState(true);
+  const [breakingItems, setBreakingItems] = useState<BreakingNewsItem[]>(BREAKING_NEWS);
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveBreakingNews().then(liveItems => {
+      if (active && liveItems.length > 0) {
+        setBreakingItems(liveItems);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -64,7 +78,7 @@ export const BreakingNewsScreen: React.FC = () => {
 
         {/* Breaking News Feed */}
         <View style={styles.list}>
-          {BREAKING_NEWS.map(item => (
+          {breakingItems.map(item => (
             <View key={item.id} style={styles.card}>
               <View style={styles.cardTopBar}>
                 <View style={styles.urgencyPill}>
