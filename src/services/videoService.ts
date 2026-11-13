@@ -1,6 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RecordedClip } from '../data/clipsData';
 import { ShortNewsItem } from '../data/shortsData';
 import { fetchLiveNewsByCategory } from './newsService';
+
+const STORAGE_KEY_CLIPS = '@nexus_live_clips';
+const STORAGE_KEY_SHORTS = '@nexus_live_shorts';
 
 // Verified, high-availability public news and documentary streams
 const STREAM_SOURCES = [
@@ -121,10 +125,19 @@ export const fetchLiveClips = async (): Promise<RecordedClip[]> => {
       });
     }
 
-    return liveClips;
-  } catch {
-    return [];
-  }
+    if (liveClips.length > 0) {
+      AsyncStorage.setItem(STORAGE_KEY_CLIPS, JSON.stringify(liveClips)).catch(() => {});
+      return liveClips;
+    }
+  } catch {}
+
+  // Fallback to persisted clips
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_CLIPS);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return [];
 };
 
 /**
@@ -134,23 +147,32 @@ export const fetchLiveClips = async (): Promise<RecordedClip[]> => {
 export const fetchLiveShorts = async (): Promise<ShortNewsItem[]> => {
   try {
     const topStories = await fetchLiveNewsByCategory('all');
-    if (!topStories || topStories.length === 0) return [];
+    if (topStories && topStories.length > 0) {
+      const shorts = topStories.slice(0, 8).map((art, idx) => {
+        const stream = STREAM_SOURCES[idx % STREAM_SOURCES.length];
+        return {
+          id: `short-live-${art.id}`,
+          headline: art.title,
+          caption: art.summary,
+          category: `${art.categoryName.toUpperCase()} FLASH`,
+          channel: art.author || stream.channel,
+          likes: `${85 + ((idx * 27) % 150)}K`,
+          comments: `${(1.8 + ((idx * 1.3) % 8)).toFixed(1)}K`,
+          videoSource: stream,
+          thumbnail: art.image,
+        };
+      });
 
-    return topStories.slice(0, 8).map((art, idx) => {
-      const stream = STREAM_SOURCES[idx % STREAM_SOURCES.length];
-      return {
-        id: `short-live-${art.id}`,
-        headline: art.title,
-        caption: art.summary,
-        category: `${art.categoryName.toUpperCase()} FLASH`,
-        channel: art.author || stream.channel,
-        likes: `${(85 + ((idx * 27) % 150))}K`,
-        comments: `${(1.8 + ((idx * 1.3) % 8)).toFixed(1)}K`,
-        videoSource: stream,
-        thumbnail: art.image,
-      };
-    });
-  } catch {
-    return [];
-  }
+      AsyncStorage.setItem(STORAGE_KEY_SHORTS, JSON.stringify(shorts)).catch(() => {});
+      return shorts;
+    }
+  } catch {}
+
+  // Fallback to persisted shorts
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_SHORTS);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return [];
 };

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { LivePlayer } from '../../components/video/LivePlayer';
 import { LIVE_BROADCAST_DETAILS } from '../../data/liveNewsData';
-import { RECORDED_CLIPS } from '../../data/clipsData';
+import { RecordedClip } from '../../data/clipsData';
+import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
@@ -12,6 +13,21 @@ export const LiveTVScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<'schedule' | 'highlights'>('schedule');
+  const [clips, setClips] = useState<RecordedClip[]>([]);
+  const [loadingClips, setLoadingClips] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+    fetchLiveClips().then(items => {
+      if (active) {
+        setClips(items);
+        setLoadingClips(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -142,29 +158,44 @@ export const LiveTVScreen: React.FC = () => {
         {/* Tab 2: Broadcast Highlights */}
         {activeTab === 'highlights' && (
           <View style={styles.highlightsList}>
-            {RECORDED_CLIPS.map(clip => (
-              <TouchableOpacity
-                key={clip.id}
-                style={[styles.highlightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate('MainTabs', { screen: 'Clips' })}
-              >
-                <View style={styles.highlightBadge}>
-                  <Text style={styles.highlightBadgeText}>{clip.duration}</Text>
-                </View>
-                <View style={styles.highlightBody}>
-                  <Text style={[styles.highlightCategory, { color: colors.accent }]}>
-                    {clip.category.toUpperCase()}
-                  </Text>
-                  <Text style={[styles.highlightTitle, { color: colors.textPrimary }]} numberOfLines={2}>
-                    {clip.title}
-                  </Text>
-                  <Text style={[styles.highlightMeta, { color: colors.textMuted }]}>
-                    {clip.views} • {clip.publishedAt}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+            {loadingClips && clips.length === 0 ? (
+              <View style={styles.loadingBox}>
+                <ActivityIndicator size="small" color={colors.accent} />
+                <Text style={[styles.loadingBoxText, { color: colors.textSecondary }]}>
+                  Loading live broadcast clips...
+                </Text>
+              </View>
+            ) : clips.length > 0 ? (
+              clips.map(clip => (
+                <TouchableOpacity
+                  key={clip.id}
+                  style={[styles.highlightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                  activeOpacity={0.85}
+                  onPress={() => navigation.navigate('MainTabs', { screen: 'Clips' })}
+                >
+                  <View style={styles.highlightBadge}>
+                    <Text style={styles.highlightBadgeText}>{clip.duration}</Text>
+                  </View>
+                  <View style={styles.highlightBody}>
+                    <Text style={[styles.highlightCategory, { color: colors.accent }]}>
+                      {clip.category.toUpperCase()}
+                    </Text>
+                    <Text style={[styles.highlightTitle, { color: colors.textPrimary }]} numberOfLines={2}>
+                      {clip.title}
+                    </Text>
+                    <Text style={[styles.highlightMeta, { color: colors.textMuted }]}>
+                      {clip.views} • {clip.publishedAt}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.loadingBox}>
+                <Text style={[styles.loadingBoxText, { color: colors.textSecondary }]}>
+                  No broadcast clips available.
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
@@ -375,5 +406,14 @@ const styles = StyleSheet.create({
   highlightMeta: {
     fontSize: 11,
     marginTop: 2,
+  },
+  loadingBox: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingBoxText: {
+    marginTop: spacing.sm,
+    fontSize: 13,
   },
 });

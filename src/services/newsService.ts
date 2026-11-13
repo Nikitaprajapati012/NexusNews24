@@ -1,34 +1,94 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CATEGORIES } from '../data/categoriesData';
-import {
-  ALL_NEWS_ARTICLES,
-  NewsArticle,
-  getArticlesByCategory as getMockArticlesByCategory,
-} from '../data/newsData';
-import { BREAKING_NEWS, BreakingNewsItem } from '../data/breakingNewsData';
+import { NewsArticle } from '../data/newsData';
+import { BreakingNewsItem } from '../data/breakingNewsData';
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes in-memory freshness
 
-// Real RSS Feeds with high-res photos and rich human summaries
-const CATEGORY_RSS_URLS: Record<string, string> = {
-  all: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
-  national: 'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms',
-  international: 'https://timesofindia.indiatimes.com/rssfeeds/296589292.cms',
-  business: 'https://timesofindia.indiatimes.com/rssfeeds/1898055.cms',
-  technology: 'https://timesofindia.indiatimes.com/rssfeeds/66949542.cms',
-  sports: 'https://timesofindia.indiatimes.com/rssfeeds/4719148.cms',
-  entertainment: 'https://timesofindia.indiatimes.com/rssfeeds/1081479906.cms',
-  education: 'https://timesofindia.indiatimes.com/rssfeeds/913168846.cms',
-  health: 'https://timesofindia.indiatimes.com/rssfeeds/2886704.cms',
-  lifestyle: 'https://timesofindia.indiatimes.com/rssfeeds/2886704.cms',
-  // Regional & Politics via Google News RSS India
-  gujarat: 'https://news.google.com/rss/search?q=Gujarat+News&hl=en-IN&gl=IN&ceid=IN:en',
-  ahmedabad: 'https://news.google.com/rss/search?q=Ahmedabad+News&hl=en-IN&gl=IN&ceid=IN:en',
-  politics: 'https://news.google.com/rss/search?q=India+Politics+Elections&hl=en-IN&gl=IN&ceid=IN:en',
+const BROWSER_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+  Accept:
+    'application/rss+xml, application/xml, text/xml, application/atom+xml, text/html;q=0.9, */*;q=0.8',
+  'Accept-Language': 'en-IN,en;q=0.9',
+  'Cache-Control': 'no-cache',
 };
 
-const BREAKING_RSS_URL = 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms';
+// Multi-tier live RSS endpoints (Primary -> Backup 1 -> Backup 2)
+interface CategoryEndpoints {
+  primary: string;
+  backup: string;
+  extra?: string;
+}
 
-// High-resolution real photography fallbacks by category (avoiding abstract vector drawings)
+const CATEGORY_ENDPOINTS: Record<string, CategoryEndpoints> = {
+  all: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
+    backup: 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvnews-top-stories',
+  },
+  national: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms',
+    backup: 'https://news.google.com/rss/search?q=India+National+News&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvnews-india-news',
+  },
+  international: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/296589292.cms',
+    backup: 'https://news.google.com/rss/search?q=World+International+News&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvnews-world-news',
+  },
+  business: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/1898055.cms',
+    backup: 'https://news.google.com/rss/search?q=India+Business+Stock+Market+Sensex&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvprofit-latest',
+  },
+  technology: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/66949542.cms',
+    backup: 'https://news.google.com/rss/search?q=Technology+AI+Computing+India&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/gadgets360-latest',
+  },
+  sports: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/4719148.cms',
+    backup: 'https://news.google.com/rss/search?q=India+Sports+Cricket&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvsports-latest',
+  },
+  entertainment: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/1081479906.cms',
+    backup: 'https://news.google.com/rss/search?q=India+Entertainment+Cinema&hl=en-IN&gl=IN&ceid=IN:en',
+    extra: 'https://feeds.feedburner.com/ndtvmovies-latest',
+  },
+  education: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/913168846.cms',
+    backup: 'https://news.google.com/rss/search?q=India+Education+University+Exams&hl=en-IN&gl=IN&ceid=IN:en',
+  },
+  health: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/2886704.cms',
+    backup: 'https://news.google.com/rss/search?q=Health+Medical+India&hl=en-IN&gl=IN&ceid=IN:en',
+  },
+  lifestyle: {
+    primary: 'https://timesofindia.indiatimes.com/rssfeeds/2886704.cms',
+    backup: 'https://news.google.com/rss/search?q=Lifestyle+Travel+Culture+India&hl=en-IN&gl=IN&ceid=IN:en',
+  },
+  gujarat: {
+    primary: 'https://news.google.com/rss/search?q=Gujarat+News&hl=en-IN&gl=IN&ceid=IN:en',
+    backup: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
+  },
+  ahmedabad: {
+    primary: 'https://news.google.com/rss/search?q=Ahmedabad+News&hl=en-IN&gl=IN&ceid=IN:en',
+    backup: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
+  },
+  politics: {
+    primary: 'https://news.google.com/rss/search?q=India+Politics+Elections+Parliament&hl=en-IN&gl=IN&ceid=IN:en',
+    backup: 'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms',
+  },
+};
+
+const BREAKING_URLS = [
+  'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',
+  'https://news.google.com/rss/search?q=Breaking+News+India+OR+Sensex+OR+World&hl=en-IN&gl=IN&ceid=IN:en',
+  'https://feeds.feedburner.com/ndtvnews-top-stories',
+];
+
 const CATEGORY_FALLBACK_PHOTOS: Record<string, string> = {
   all: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1000&q=80',
   technology: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1000&q=80',
@@ -50,14 +110,13 @@ interface CacheEntry<T> {
   fetchedAt: number;
 }
 
-const categoryCache = new Map<string, CacheEntry<NewsArticle[]>>();
+const memoryCategoryCache = new Map<string, CacheEntry<NewsArticle[]>>();
 const articleRegistry = new Map<string, NewsArticle>();
-let breakingCache: CacheEntry<BreakingNewsItem[]> | null = null;
+let memoryBreakingCache: CacheEntry<BreakingNewsItem[]> | null = null;
 
-// Seed registry with static mock articles for bookmark fallback
-ALL_NEWS_ARTICLES.forEach(article => {
-  articleRegistry.set(article.id, article);
-});
+// Persistent storage keys
+const STORAGE_PREFIX_CATEGORY = '@nexus_live_category_';
+const STORAGE_KEY_BREAKING = '@nexus_live_breaking';
 
 const decodeHtmlEntities = (text: string): string =>
   text
@@ -71,46 +130,46 @@ const decodeHtmlEntities = (text: string): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
-/**
- * Robustly sanitizes text from RSS descriptions:
- * Handles CDATA, entity-encoded HTML (<ol>, <li>, <a>, <font>),
- * strips all tags, and cleans up raw link lists.
- */
 const cleanDescriptionText = (raw: string, title: string, author: string): string => {
   if (!raw) {
     return `${title}. Latest developing news reported by ${author}.`;
   }
 
-  // 1. Unwrap CDATA if present
   let content = raw.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim();
+  let decoded = content;
+  for (let i = 0; i < 3; i++) {
+    const next = decodeHtmlEntities(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
 
-  // 2. Decode entities so &lt;ol&gt; becomes <ol>
-  let decoded = decodeHtmlEntities(content);
-
-  // 3. Detect if this is Google News RSS's raw link list (<ol><li><a href="...">...)
-  if (/<ol[\s>]|<li[\s>]|target="_blank"/i.test(decoded)) {
-    // Extract other publisher names mentioned inside <font color="...">Publisher</font>
+  // Detect Google News / aggregator HTML snippets containing link lists
+  if (/<ol[\s>]|<li[\s>]|target="_blank"|news\.google\.com/i.test(decoded)) {
     const publisherMatches = Array.from(
       decoded.matchAll(/<font[^>]*>([^<]+)<\/font>/gi),
     ).map(m => m[1].trim());
 
-    const uniqueSources = Array.from(new Set(publisherMatches.filter(s => s && s !== author)));
+    const uniqueSources = Array.from(
+      new Set(publisherMatches.filter(s => s && s.toLowerCase() !== author.toLowerCase())),
+    );
 
     if (uniqueSources.length > 0) {
-      return `${title}. Reporting verified by ${author}, with confirmed industry coverage from ${uniqueSources
+      return `${title}. Dispatched with reporting and analysis from ${uniqueSources
         .slice(0, 3)
-        .join(', ')}. Tap below to read the complete story.`;
+        .join(', ')}. Verified by ${author}.`;
     }
 
-    return `${title}. Key reporting and continuous developing updates from ${author}. Tap below for full report.`;
+    return `${title}. Key reporting and continuous verified updates dispatched by ${author}.`;
   }
 
-  // 4. For standard RSS (like Times of India), strip all HTML tags (<a...><img...>)
+  // Strip all HTML markup
   let plain = decoded.replace(/<[^>]*>/g, ' ');
-  plain = decodeHtmlEntities(plain);
-  plain = plain.replace(/\s+/g, ' ').trim();
+  for (let i = 0; i < 2; i++) {
+    plain = decodeHtmlEntities(plain).replace(/<[^>]*>/g, ' ');
+  }
+  // Strip any bare URLs
+  plain = plain.replace(/https?:\/\/[^\s]+/gi, '').replace(/\s+/g, ' ').trim();
 
-  // 5. If the extracted summary is too short or empty, provide a clean journalistic lead
   if (plain.length < 25 || plain.toLowerCase() === title.toLowerCase()) {
     return `${title}. Verified news bulletin reported by ${author}.`;
   }
@@ -126,19 +185,21 @@ const extractTagValue = (block: string, tagName: string): string => {
 };
 
 const extractImageUrl = (itemBlock: string, rawDescription: string): string | null => {
-  // 1. Check <enclosure url="..." />
   const enclosureMatch = itemBlock.match(/<enclosure[^>]+url=["']([^"']+)["']/i);
   if (enclosureMatch?.[1] && enclosureMatch[1].startsWith('http')) {
     return enclosureMatch[1];
   }
 
-  // 2. Check <media:content url="..." /> or <media:thumbnail url="..." />
   const mediaMatch = itemBlock.match(/<media:(?:content|thumbnail)[^>]+url=["']([^"']+)["']/i);
   if (mediaMatch?.[1] && mediaMatch[1].startsWith('http')) {
     return mediaMatch[1];
   }
 
-  // 3. Check <img src="..." /> in description
+  const storyImgMatch = itemBlock.match(/<storyimage[^>]*>([^<]+)<\/storyimage>/i);
+  if (storyImgMatch?.[1] && storyImgMatch[1].startsWith('http')) {
+    return storyImgMatch[1].trim();
+  }
+
   const unescapedDesc = decodeHtmlEntities(rawDescription);
   const imgMatch = unescapedDesc.match(/<img[^>]+src=["']([^"']+)["']/i);
   if (imgMatch?.[1] && imgMatch[1].startsWith('http')) {
@@ -176,7 +237,6 @@ const cleanHeadlineAndAuthor = (rawTitle: string, rawSource: string, rawCreator:
       .replace(/<[^>]*>/g, '')
       .trim() || 'Times of India';
 
-  // Strip trailing " - Publisher" from Google News titles
   const suffixMatch = decodedTitle.match(/\s+-\s+([^-]+)$/);
   if (suffixMatch) {
     if (!rawCreator && !rawSource) {
@@ -201,7 +261,7 @@ interface ParsedRssItem {
   guid: string;
 }
 
-const parseRssItems = (xml: string, limit = 15): ParsedRssItem[] => {
+const parseRssItems = (xml: string, limit = 20): ParsedRssItem[] => {
   const items: ParsedRssItem[] = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match: RegExpExecArray | null;
@@ -239,14 +299,34 @@ const fetchRssXml = async (url: string): Promise<string> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 9000);
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: BROWSER_HEADERS,
+    });
     if (!response.ok) {
-      throw new Error(`RSS fetch failed with status ${response.status}`);
+      throw new Error(`HTTP ${response.status}`);
     }
     return await response.text();
   } finally {
     clearTimeout(timeout);
   }
+};
+
+const fetchWithFallback = async (endpoints: CategoryEndpoints): Promise<ParsedRssItem[]> => {
+  const urlsToTry = [endpoints.primary, endpoints.backup];
+  if (endpoints.extra) urlsToTry.push(endpoints.extra);
+
+  for (const url of urlsToTry) {
+    try {
+      const xml = await fetchRssXml(url);
+      const parsed = parseRssItems(xml, 20);
+      if (parsed.length > 0) return parsed;
+    } catch {
+      // Continue to next endpoint in fallback chain
+    }
+  }
+
+  return [];
 };
 
 const mapRssToArticles = (
@@ -276,8 +356,8 @@ const mapRssToArticles = (
       summary: item.summary,
       paragraphs: [
         item.summary,
-        `Reported by ${item.author} • Updated ${relativeTime}. Our editorial fact-checking desk has verified this live dispatch against official wire feeds and primary source disclosures.`,
-        'Continuous monitoring is active for follow-up statements, policy implications, and related market movements. Tap "Read Full Story" below to view the publisher\'s complete unedited report.',
+        `Reported by ${item.author} • Updated ${relativeTime}. Our editorial fact-checking desk has verified this live dispatch against primary source disclosures and official communications.`,
+        'Continuous monitoring is active for follow-up statements, policy developments, and related market movements. Tap "Read Full Story" below to view the publisher\'s complete unedited report.',
       ],
       image: { uri: resolvedImageUrl },
       relatedIds: [],
@@ -285,7 +365,6 @@ const mapRssToArticles = (
     };
   });
 
-  // Link related articles and save in in-memory registry
   articles.forEach((article, idx) => {
     article.relatedIds = articles
       .filter((_, otherIdx) => otherIdx !== idx)
@@ -297,33 +376,84 @@ const mapRssToArticles = (
   return articles;
 };
 
+// AsyncStorage persistent helpers
+const loadPersistedCategory = async (categoryId: string): Promise<NewsArticle[] | null> => {
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_PREFIX_CATEGORY + categoryId);
+    if (!raw) return null;
+    const parsed: NewsArticle[] = JSON.parse(raw);
+    parsed.forEach(a => articleRegistry.set(a.id, a));
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const savePersistedCategory = async (categoryId: string, articles: NewsArticle[]) => {
+  try {
+    await AsyncStorage.setItem(STORAGE_PREFIX_CATEGORY + categoryId, JSON.stringify(articles));
+  } catch {}
+};
+
+const loadPersistedBreaking = async (): Promise<BreakingNewsItem[] | null> => {
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_BREAKING);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const savePersistedBreaking = async (items: BreakingNewsItem[]) => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY_BREAKING, JSON.stringify(items));
+  } catch {}
+};
+
 /**
- * Fetches real live news articles for a category,
- * with in-memory caching and clean fallback photos.
+ * Fetches real live news articles for a category.
+ * Strategy:
+ * 1. Returns in-memory cache if fresh.
+ * 2. Fetches via Primary -> Backup RSS endpoints with browser headers.
+ * 3. Saves to memory cache AND AsyncStorage persistent cache.
+ * 4. If network fails, serves AsyncStorage persistent live cache.
+ * NEVER falls back to demo mock data!
  */
 export const fetchLiveNewsByCategory = async (
   categoryId: string,
   forceRefresh = false,
 ): Promise<NewsArticle[]> => {
-  const cached = categoryCache.get(categoryId);
+  const cached = memoryCategoryCache.get(categoryId);
   if (!forceRefresh && cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return cached.data;
   }
 
-  const url = CATEGORY_RSS_URLS[categoryId] || CATEGORY_RSS_URLS.all;
-  try {
-    const xml = await fetchRssXml(url);
-    const parsed = parseRssItems(xml, 15);
-    if (parsed.length === 0) {
-      return getMockArticlesByCategory(categoryId);
-    }
+  const endpoints = CATEGORY_ENDPOINTS[categoryId] || CATEGORY_ENDPOINTS.all;
+  const parsedItems = await fetchWithFallback(endpoints);
 
-    const articles = mapRssToArticles(parsed, categoryId);
-    categoryCache.set(categoryId, { data: articles, fetchedAt: Date.now() });
+  if (parsedItems.length > 0) {
+    const articles = mapRssToArticles(parsedItems, categoryId);
+    memoryCategoryCache.set(categoryId, { data: articles, fetchedAt: Date.now() });
+    savePersistedCategory(categoryId, articles);
     return articles;
-  } catch {
-    return cached?.data || getMockArticlesByCategory(categoryId);
   }
+
+  // If network failed, load previously saved live articles from AsyncStorage
+  const persisted = await loadPersistedCategory(categoryId);
+  if (persisted && persisted.length > 0) {
+    memoryCategoryCache.set(categoryId, { data: persisted, fetchedAt: Date.now() });
+    return persisted;
+  }
+
+  return cached?.data || [];
+};
+
+/**
+ * Loads cached live articles synchronously if available in memory,
+ * or returns empty array so screens can show a loading state without mock data.
+ */
+export const getCachedArticlesForCategory = (categoryId: string): NewsArticle[] => {
+  return memoryCategoryCache.get(categoryId)?.data || [];
 };
 
 /**
@@ -332,15 +462,23 @@ export const fetchLiveNewsByCategory = async (
 export const fetchLiveBreakingNews = async (
   forceRefresh = false,
 ): Promise<BreakingNewsItem[]> => {
-  if (!forceRefresh && breakingCache && Date.now() - breakingCache.fetchedAt < CACHE_TTL_MS) {
-    return breakingCache.data;
+  if (!forceRefresh && memoryBreakingCache && Date.now() - memoryBreakingCache.fetchedAt < CACHE_TTL_MS) {
+    return memoryBreakingCache.data;
   }
 
-  try {
-    const xml = await fetchRssXml(BREAKING_RSS_URL);
-    const parsed = parseRssItems(xml, 8);
-    if (parsed.length === 0) return BREAKING_NEWS;
+  let parsed: ParsedRssItem[] = [];
+  for (const url of BREAKING_URLS) {
+    try {
+      const xml = await fetchRssXml(url);
+      const items = parseRssItems(xml, 10);
+      if (items.length > 0) {
+        parsed = items;
+        break;
+      }
+    } catch {}
+  }
 
+  if (parsed.length > 0) {
     const urgencies: Array<'CRITICAL' | 'HIGH' | 'FLASH'> = ['CRITICAL', 'HIGH', 'FLASH'];
     const items: BreakingNewsItem[] = parsed.map((item, idx) => {
       const urgency = urgencies[idx % urgencies.length];
@@ -361,15 +499,22 @@ export const fetchLiveBreakingNews = async (
       };
     });
 
-    breakingCache = { data: items, fetchedAt: Date.now() };
+    memoryBreakingCache = { data: items, fetchedAt: Date.now() };
+    savePersistedBreaking(items);
     return items;
-  } catch {
-    return breakingCache?.data || BREAKING_NEWS;
   }
+
+  const persisted = await loadPersistedBreaking();
+  if (persisted && persisted.length > 0) {
+    memoryBreakingCache = { data: persisted, fetchedAt: Date.now() };
+    return persisted;
+  }
+
+  return memoryBreakingCache?.data || [];
 };
 
 /**
- * Searches live news by keyword, returning real articles.
+ * Searches live news by keyword with live fallback.
  */
 export const searchLiveNews = async (query: string): Promise<NewsArticle[]> => {
   const trimmed = query.trim();
@@ -379,13 +524,11 @@ export const searchLiveNews = async (query: string): Promise<NewsArticle[]> => {
   const url = `https://news.google.com/rss/search?q=${encoded}&hl=en-IN&gl=IN&ceid=IN:en`;
   try {
     const xml = await fetchRssXml(url);
-    const parsed = parseRssItems(xml, 15);
+    const parsed = parseRssItems(xml, 20);
     if (parsed.length > 0) {
       return mapRssToArticles(parsed, 'all');
     }
-  } catch {
-    // Fall back to local search below
-  }
+  } catch {}
 
   const q = trimmed.toLowerCase();
   return getCachedArticles().filter(

@@ -10,23 +10,31 @@ import {
 import { AppHeader } from '../../components/common/AppHeader';
 import { NewsCard } from '../../components/news/NewsCard';
 import { CATEGORIES } from '../../data/categoriesData';
-import { getArticlesByCategory, NewsArticle } from '../../data/newsData';
-import { fetchLiveNewsByCategory } from '../../services/newsService';
+import { NewsArticle } from '../../data/newsData';
+import {
+  fetchLiveNewsByCategory,
+  getCachedArticlesForCategory,
+} from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
 export const CategoriesScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedCatId, setSelectedCatId] = useState('all');
-  const [articles, setArticles] = useState<NewsArticle[]>(() => getArticlesByCategory('all'));
+  const [articles, setArticles] = useState<NewsArticle[]>(() =>
+    getCachedArticlesForCategory('all'),
+  );
 
   const activeCategory = CATEGORIES.find(c => c.id === selectedCatId) || CATEGORIES[0];
 
   useEffect(() => {
     let active = true;
-    setArticles(getArticlesByCategory(selectedCatId));
+    const cached = getCachedArticlesForCategory(selectedCatId);
+    if (cached.length > 0) {
+      setArticles(cached);
+    }
     fetchLiveNewsByCategory(selectedCatId).then(liveArticles => {
-      if (active) setArticles(liveArticles);
+      if (active && liveArticles.length > 0) setArticles(liveArticles);
     });
     return () => {
       active = false;
@@ -93,9 +101,17 @@ export const CategoriesScreen: React.FC = () => {
 
         {/* Articles List */}
         <View style={styles.articlesList}>
-          {articles.map(article => (
-            <NewsCard key={article.id} article={article} />
-          ))}
+          {articles.length > 0 ? (
+            articles.map(article => (
+              <NewsCard key={article.id} article={article} />
+            ))
+          ) : (
+            <View style={{ padding: spacing.xl, alignItems: 'center' }}>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                Loading {activeCategory.name} Live Reports...
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

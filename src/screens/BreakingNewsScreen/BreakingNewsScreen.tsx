@@ -10,7 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BREAKING_NEWS, BreakingNewsItem } from '../../data/breakingNewsData';
+import { BreakingNewsItem } from '../../data/breakingNewsData';
 import { fetchLiveBreakingNews } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
@@ -19,7 +19,7 @@ export const BreakingNewsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
   const [pulse, setPulse] = useState(true);
-  const [breakingItems, setBreakingItems] = useState<BreakingNewsItem[]>(BREAKING_NEWS);
+  const [breakingItems, setBreakingItems] = useState<BreakingNewsItem[]>([]);
 
   useEffect(() => {
     let active = true;

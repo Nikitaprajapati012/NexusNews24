@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BREAKING_NEWS, BreakingNewsItem } from '../../data/breakingNewsData';
+import { BreakingNewsItem } from '../../data/breakingNewsData';
 import { fetchLiveBreakingNews } from '../../services/newsService';
 import { spacing } from '../../theme/spacing';
 
 export const BreakingNewsTicker: React.FC = () => {
   const navigation = useNavigation<any>();
-  const [items, setItems] = useState<BreakingNewsItem[]>(BREAKING_NEWS);
+  const [items, setItems] = useState<BreakingNewsItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -24,13 +24,14 @@ export const BreakingNewsTicker: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (items.length === 0) return;
     const timer = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % items.length);
     }, 4500);
     return () => clearInterval(timer);
   }, [items.length]);
 
-  const currentItem = items[currentIndex] || items[0];
+  const currentItem = items[currentIndex];
 
   return (
     <TouchableOpacity

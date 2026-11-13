@@ -8,26 +8,31 @@ import {
   Image,
   Share,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { ClipPlayer } from '../../components/video/ClipPlayer';
-import { RECORDED_CLIPS, RecordedClip } from '../../data/clipsData';
+import { RecordedClip } from '../../data/clipsData';
 import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
 export const NewsClipsScreen: React.FC = () => {
   const { colors } = useTheme();
-  const [allClips, setAllClips] = useState<RecordedClip[]>(RECORDED_CLIPS);
-  const [selectedClip, setSelectedClip] = useState<RecordedClip>(RECORDED_CLIPS[0]);
+  const [allClips, setAllClips] = useState<RecordedClip[]>([]);
+  const [selectedClip, setSelectedClip] = useState<RecordedClip | null>(null);
   const [selectedCat, setSelectedCat] = useState<string>('All');
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let active = true;
     fetchLiveClips().then(live => {
-      if (active && live.length > 0) {
-        setAllClips(live);
-        setSelectedClip(live[0]);
+      if (active) {
+        if (live.length > 0) {
+          setAllClips(live);
+          setSelectedClip(live[0]);
+        }
+        setLoading(false);
       }
     });
     return () => {
@@ -54,128 +59,143 @@ export const NewsClipsScreen: React.FC = () => {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <AppHeader showDate={false} />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Active Clip Player Section */}
-        <View style={styles.playerContainer}>
-          <ClipPlayer clip={selectedClip} />
-          <View style={[styles.activeClipDetails, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-            <View style={styles.titleRow}>
-              <View style={styles.titleTextContainer}>
-                <Text style={[styles.nowPlayingLabel, { color: colors.accent }]}>
-                  NOW PLAYING REPORT
-                </Text>
-                <Text style={[styles.activeTitle, { color: colors.textPrimary }]}>
-                  {selectedClip.title}
+      {loading && !selectedClip ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Fetching live broadcast clips...
+          </Text>
+        </View>
+      ) : selectedClip ? (
+        <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Active Clip Player Section */}
+          <View style={styles.playerContainer}>
+            <ClipPlayer clip={selectedClip} />
+            <View style={[styles.activeClipDetails, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+              <View style={styles.titleRow}>
+                <View style={styles.titleTextContainer}>
+                  <Text style={[styles.nowPlayingLabel, { color: colors.accent }]}>
+                    NOW PLAYING REPORT
+                  </Text>
+                  <Text style={[styles.activeTitle, { color: colors.textPrimary }]}>
+                    {selectedClip.title}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.shareBtn, { backgroundColor: colors.surfaceVariant }]}
+                  onPress={() => handleShareClip(selectedClip)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.shareIcon}>🔗</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={[styles.activeDesc, { color: colors.textSecondary }]}>
+                {selectedClip.description}
+              </Text>
+              <View style={styles.metaRow}>
+                <Text style={[styles.metaText, { color: colors.textMuted }]}>
+                  👁️ {selectedClip.views} • ⏱️ {selectedClip.duration} • 📅 {selectedClip.publishedAt}
                 </Text>
               </View>
-              <TouchableOpacity
-                style={[styles.shareBtn, { backgroundColor: colors.surfaceVariant }]}
-                onPress={() => handleShareClip(selectedClip)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.shareIcon}>🔗</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.activeDesc, { color: colors.textSecondary }]}>
-              {selectedClip.description}
-            </Text>
-            <View style={styles.metaRow}>
-              <Text style={[styles.metaText, { color: colors.textMuted }]}>
-                👁️ {selectedClip.views} • ⏱️ {selectedClip.duration} • 📅 {selectedClip.publishedAt}
-              </Text>
             </View>
           </View>
-        </View>
 
-        {/* Category Filters */}
-        <View style={styles.categoryBar}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-            {categories.map(cat => {
-              const active = selectedCat === cat;
+          {/* Category Filters */}
+          <View style={styles.categoryBar}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+              {categories.map(cat => {
+                const active = selectedCat === cat;
+                return (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[
+                      styles.catChip,
+                      {
+                        backgroundColor: active ? '#DC2626' : colors.card,
+                        borderColor: active ? '#DC2626' : colors.cardBorder,
+                      },
+                    ]}
+                    onPress={() => setSelectedCat(cat)}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={[
+                        styles.catChipText,
+                        { color: active ? '#FFFFFF' : colors.textPrimary },
+                      ]}
+                    >
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Clips Catalog */}
+          <View style={styles.clipsListSection}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              MORE BROADCAST CLIPS ({filteredClips.length})
+            </Text>
+
+            {filteredClips.map(clip => {
+              const isPlayingThis = clip.id === selectedClip.id;
               return (
                 <TouchableOpacity
-                  key={cat}
+                  key={clip.id}
                   style={[
-                    styles.catChip,
+                    styles.clipCard,
                     {
-                      backgroundColor: active ? '#DC2626' : colors.card,
-                      borderColor: active ? '#DC2626' : colors.cardBorder,
+                      backgroundColor: colors.card,
+                      borderColor: isPlayingThis ? colors.accent : colors.cardBorder,
                     },
                   ]}
-                  onPress={() => setSelectedCat(cat)}
-                  activeOpacity={0.8}
+                  activeOpacity={0.85}
+                  onPress={() => setSelectedClip(clip)}
                 >
-                  <Text
-                    style={[
-                      styles.catChipText,
-                      { color: active ? '#FFFFFF' : colors.textPrimary },
-                    ]}
-                  >
-                    {cat}
-                  </Text>
+                  <View style={styles.thumbWrapper}>
+                    <Image source={clip.thumbnail} style={styles.clipThumb} resizeMode="cover" />
+                    <View style={styles.durationTag}>
+                      <Text style={styles.durationText}>{clip.duration}</Text>
+                    </View>
+                    <View style={styles.playIconOverlay}>
+                      <Text style={styles.playArrow}>▶</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.clipContent}>
+                    <View style={styles.clipBadgeRow}>
+                      <Text style={[styles.categoryLabel, { color: colors.accent }]}>
+                        {clip.category.toUpperCase()}
+                      </Text>
+                      {isPlayingThis && (
+                        <View style={styles.playingNowBadge}>
+                          <Text style={styles.playingNowText}>PLAYING</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.clipTitle, { color: colors.textPrimary }]} numberOfLines={2}>
+                      {clip.title}
+                    </Text>
+                    <Text style={[styles.clipDescription, { color: colors.textSecondary }]} numberOfLines={2}>
+                      {clip.description}
+                    </Text>
+                    <Text style={[styles.clipMeta, { color: colors.textMuted }]}>
+                      {clip.views} • {clip.publishedAt}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
-        </View>
-
-        {/* Clips Catalog */}
-        <View style={styles.clipsListSection}>
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            MORE BROADCAST CLIPS ({filteredClips.length})
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            No broadcast clips currently available.
           </Text>
-
-          {filteredClips.map(clip => {
-            const isPlayingThis = clip.id === selectedClip.id;
-            return (
-              <TouchableOpacity
-                key={clip.id}
-                style={[
-                  styles.clipCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: isPlayingThis ? colors.accent : colors.cardBorder,
-                  },
-                ]}
-                activeOpacity={0.85}
-                onPress={() => setSelectedClip(clip)}
-              >
-                <View style={styles.thumbWrapper}>
-                  <Image source={clip.thumbnail} style={styles.clipThumb} resizeMode="cover" />
-                  <View style={styles.durationTag}>
-                    <Text style={styles.durationText}>{clip.duration}</Text>
-                  </View>
-                  <View style={styles.playIconOverlay}>
-                    <Text style={styles.playArrow}>▶</Text>
-                  </View>
-                </View>
-
-                <View style={styles.clipContent}>
-                  <View style={styles.clipBadgeRow}>
-                    <Text style={[styles.categoryLabel, { color: colors.accent }]}>
-                      {clip.category.toUpperCase()}
-                    </Text>
-                    {isPlayingThis && (
-                      <View style={styles.playingNowBadge}>
-                        <Text style={styles.playingNowText}>PLAYING</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={[styles.clipTitle, { color: colors.textPrimary }]} numberOfLines={2}>
-                    {clip.title}
-                  </Text>
-                  <Text style={[styles.clipDescription, { color: colors.textSecondary }]} numberOfLines={2}>
-                    {clip.description}
-                  </Text>
-                  <Text style={[styles.clipMeta, { color: colors.textMuted }]}>
-                    {clip.views} • {clip.publishedAt}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
         </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -353,5 +373,16 @@ const styles = StyleSheet.create({
   clipMeta: {
     fontSize: 10,
     fontWeight: '500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

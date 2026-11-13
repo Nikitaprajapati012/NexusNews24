@@ -11,7 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { getArticleById, ALL_NEWS_ARTICLES, NewsArticle } from '../../data/newsData';
+import { NewsArticle } from '../../data/newsData';
 import { getLiveArticleById } from '../../services/newsService';
 import { CategoryBadge } from '../../components/news/CategoryBadge';
 import { NewsCard } from '../../components/news/NewsCard';
@@ -24,15 +24,47 @@ export const NewsDetailsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
 
-  const articleId = route.params?.articleId || 'art-1';
-  const article = getLiveArticleById(articleId) || getArticleById(articleId) || ALL_NEWS_ARTICLES[0];
+  const articleId = route.params?.articleId;
+  const article = articleId ? getLiveArticleById(articleId) : undefined;
 
   const [bookmarked, setBookmarked] = useState(false);
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1);
 
   useEffect(() => {
-    isArticleBookmarked(article.id).then(setBookmarked);
-  }, [article.id]);
+    if (article) {
+      isArticleBookmarked(article.id).then(setBookmarked);
+    }
+  }, [article?.id]);
+
+  if (!article) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[styles.topBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.backIcon, { color: colors.textPrimary }]}>‹ BACK</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl }}>
+          <Text style={{ fontSize: 16, color: colors.textPrimary, fontWeight: '700', marginBottom: spacing.md }}>
+            Article Unavailable
+          </Text>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.lg }}>
+            This live dispatch is no longer active in cache. Please explore other breaking stories.
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: colors.accent, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: borderRadius.md }}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Return to Feed</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleToggleBookmark = async () => {
     const res = await toggleBookmark(article.id);
@@ -49,8 +81,8 @@ export const NewsDetailsScreen: React.FC = () => {
   };
 
   const relatedArticles = article.relatedIds
-    .map(id => getLiveArticleById(id) || getArticleById(id))
-    .filter((a): a is NewsArticle => a !== undefined);
+    .map(id => getLiveArticleById(id))
+    .filter((a): a is NewsArticle => Boolean(a));
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>

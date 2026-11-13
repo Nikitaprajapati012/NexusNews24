@@ -1,10 +1,11 @@
-import { ALL_NEWS_ARTICLES, NewsArticle } from '../data/newsData';
+import { NewsArticle } from '../data/newsData';
+import { getCachedArticles } from '../services/newsService';
 
 export const searchArticlesOffline = (query: string): NewsArticle[] => {
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
-  return ALL_NEWS_ARTICLES.filter(article => {
+  return getCachedArticles().filter(article => {
     return (
       article.title.toLowerCase().includes(q) ||
       article.summary.toLowerCase().includes(q) ||
@@ -14,3 +15,4 @@ export const searchArticlesOffline = (query: string): NewsArticle[] => {
     );
   });
 };
+

@@ -6,6 +6,13 @@ import { fetchLiveBreakingNews } from '../../services/newsService';
 import { getLiveBroadcastTime } from '../../utils/dateFormatter';
 import { spacing } from '../../theme/spacing';
 
+const LIVE_STREAM_SOURCES = [
+  { uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8' },
+  { uri: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8' },
+  { uri: 'https://c.mjh.nz/abc-news.m3u8' },
+  { uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv.360p.mpeg4.mov' },
+];
+
 const LOCAL_FALLBACK_VIDEO = require('../../assets/videos/live_stream.mp4');
 
 interface Props {
@@ -18,7 +25,8 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
   const [muted, setMuted] = useState(false);
   const [clock, setClock] = useState(getLiveBroadcastTime());
   const [tickerIndex, setTickerIndex] = useState(0);
-  const [videoSource, setVideoSource] = useState<any>(LIVE_BROADCAST_DETAILS.videoSource);
+  const [streamIndex, setStreamIndex] = useState(0);
+  const [videoSource, setVideoSource] = useState<any>(LIVE_STREAM_SOURCES[0]);
   const [lowerThirds, setLowerThirds] = useState<string[]>(LIVE_BROADCAST_DETAILS.lowerThirds);
 
   useEffect(() => {
@@ -60,8 +68,12 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
         playInBackground={false}
         playWhenInactive={false}
         onError={() => {
-          // If live HLS stream drops, fall back to offline stream
-          if (videoSource !== LOCAL_FALLBACK_VIDEO) {
+          // If current live stream drops, try next live satellite source
+          const nextIndex = streamIndex + 1;
+          if (nextIndex < LIVE_STREAM_SOURCES.length) {
+            setStreamIndex(nextIndex);
+            setVideoSource(LIVE_STREAM_SOURCES[nextIndex]);
+          } else if (videoSource !== LOCAL_FALLBACK_VIDEO) {
             setVideoSource(LOCAL_FALLBACK_VIDEO);
           }
         }}

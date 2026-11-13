@@ -38,13 +38,13 @@ export const ProfileScreen: React.FC = () => {
             />
             <View style={styles.userInfo}>
               <View style={styles.badgeRow}>
-                <Text style={[styles.userName, { color: colors.textPrimary }]}>Nikita Sharma</Text>
+                <Text style={[styles.userName, { color: colors.textPrimary }]}>Nikita Prajapati</Text>
                 <View style={styles.verifiedBadge}>
                   <Text style={styles.verifiedIcon}>✓</Text>
                 </View>
               </View>
               <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
-                nikita@nexusnews24.internal
+                nikita.prajapati@nexusnews24.com
               </Text>
               <View style={styles.subscriberPill}>
                 <Text style={styles.subscriberText}>PREMIUM SUBSCRIBER • ALL ACCESS</Text>

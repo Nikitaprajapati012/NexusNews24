@@ -5,9 +5,9 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   RefreshControl,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
@@ -17,14 +17,12 @@ import { FeaturedNewsCard } from '../../components/news/FeaturedNewsCard';
 import { TrendingCarousel } from '../../components/news/TrendingCarousel';
 import { NewsCard } from '../../components/news/NewsCard';
 import { CATEGORIES } from '../../data/categoriesData';
+import { NewsArticle } from '../../data/newsData';
 import {
-  NewsArticle,
-  getFeaturedArticles,
-  getTrendingArticles,
-  getArticlesByCategory,
-} from '../../data/newsData';
-import { fetchLiveNewsByCategory } from '../../services/newsService';
-import { SHORT_NEWS_FEED, ShortNewsItem } from '../../data/shortsData';
+  fetchLiveNewsByCategory,
+  getCachedArticlesForCategory,
+} from '../../services/newsService';
+import { ShortNewsItem } from '../../data/shortsData';
 import { fetchLiveShorts } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius } from '../../theme/spacing';
@@ -34,24 +32,33 @@ export const HomeScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
-  const [shortsFeed, setShortsFeed] = useState<ShortNewsItem[]>(SHORT_NEWS_FEED);
-  const [allArticles, setAllArticles] = useState<NewsArticle[]>(() => getArticlesByCategory('all'));
-  const [categoryArticles, setCategoryArticles] = useState<NewsArticle[]>(() =>
-    getArticlesByCategory('all'),
+  const [shortsFeed, setShortsFeed] = useState<ShortNewsItem[]>([]);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>(() =>
+    getCachedArticlesForCategory('all'),
   );
+  const [categoryArticles, setCategoryArticles] = useState<NewsArticle[]>(() =>
+    getCachedArticlesForCategory('all'),
+  );
+  const [loading, setLoading] = useState(allArticles.length === 0);
 
   const loadTopStories = useCallback(async (forceRefresh = false) => {
     const liveAll = await fetchLiveNewsByCategory('all', forceRefresh);
-    setAllArticles(liveAll);
-    if (selectedCategory === 'all') {
-      setCategoryArticles(liveAll);
+    if (liveAll.length > 0) {
+      setAllArticles(liveAll);
+      if (selectedCategory === 'all') {
+        setCategoryArticles(liveAll);
+      }
     }
   }, [selectedCategory]);
 
   useEffect(() => {
     let active = true;
     fetchLiveNewsByCategory('all').then(liveAll => {
-      if (active) setAllArticles(liveAll);
+      if (active && liveAll.length > 0) {
+        setAllArticles(liveAll);
+        setCategoryArticles(liveAll);
+        setLoading(false);
+      }
     });
     fetchLiveShorts().then(liveShorts => {
       if (active && liveShorts.length > 0) setShortsFeed(liveShorts);
@@ -63,8 +70,14 @@ export const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     let active = true;
+    const cached = getCachedArticlesForCategory(selectedCategory);
+    if (cached.length > 0) {
+      setCategoryArticles(cached);
+    }
     fetchLiveNewsByCategory(selectedCategory).then(articles => {
-      if (active) setCategoryArticles(articles);
+      if (active && articles.length > 0) {
+        setCategoryArticles(articles);
+      }
     });
     return () => {
       active = false;
@@ -78,16 +91,19 @@ export const HomeScreen: React.FC = () => {
   const displayTrending =
     trendingArticles.length > 0
       ? trendingArticles
-      : allArticles.slice(1, 6).length > 0
-      ? allArticles.slice(1, 6)
-      : getTrendingArticles();
+      : allArticles.slice(1, 6);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
       await Promise.all([
         loadTopStories(true),
-        fetchLiveNewsByCategory(selectedCategory, true).then(setCategoryArticles),
+        fetchLiveNewsByCategory(selectedCategory, true).then(articles => {
+          if (articles.length > 0) setCategoryArticles(articles);
+        }),
+        fetchLiveShorts().then(liveShorts => {
+          if (liveShorts.length > 0) setShortsFeed(liveShorts);
+        }),
       ]);
     } finally {
       setRefreshing(false);
@@ -135,8 +151,15 @@ export const HomeScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
             TOP HEADLINE
           </Text>
-          {displayFeatured.length > 0 && (
+          {displayFeatured.length > 0 ? (
             <FeaturedNewsCard article={displayFeatured[0]} />
+          ) : (
+            <View style={{ height: 180, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.card, borderRadius: borderRadius.lg }}>
+              <ActivityIndicator size="small" color={colors.accent} />
+              <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13, fontWeight: '600' }}>
+                Fetching Live Headlines...
+              </Text>
+            </View>
           )}
         </View>
 
