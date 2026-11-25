@@ -6,14 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  SafeAreaView,
-  Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { getBookmarkedIds } from '../../storage/bookmarkStorage';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { ChevronRightIcon } from '../../components/icons/TabIcons';
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -53,20 +54,21 @@ export const ProfileScreen: React.FC = () => {
           </View>
 
           {/* Stats Bar */}
-          <View style={[styles.statsBar, { backgroundColor: colors.surfaceVariant }]}>
+          <View style={[styles.statsBar, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.textPrimary }]}>142</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Read</Text>
             </View>
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
             <TouchableOpacity
               style={styles.statItem}
               onPress={() => navigation.navigate('SavedNews')}
+              activeOpacity={0.7}
             >
               <Text style={[styles.statValue, { color: colors.accent }]}>{bookmarkCount}</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Saved</Text>
             </TouchableOpacity>
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.textPrimary }]}>28.5h</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Watched</Text>
@@ -80,84 +82,79 @@ export const ProfileScreen: React.FC = () => {
 
           <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={() => navigation.navigate('SavedNews')}
           >
-            <View style={styles.menuLeft}>
-              <Text style={styles.menuEmoji}>🔖</Text>
+            <Text style={styles.menuIcon}>🔖</Text>
+            <View style={styles.menuContent}>
               <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>Saved Articles</Text>
+              <Text style={[styles.menuSubtitle, { color: colors.textMuted }]}>
+                {bookmarkCount} items offline in cache
+              </Text>
             </View>
-            <View style={styles.menuRight}>
-              <Text style={[styles.badgeCount, { color: colors.accent }]}>{bookmarkCount}</Text>
-              <Text style={[styles.arrow, { color: colors.textMuted }]}>❯</Text>
-            </View>
+            <ChevronRightIcon color={colors.textMuted} size={15} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('Notifications')}
-          >
-            <View style={styles.menuLeft}>
-              <Text style={styles.menuEmoji}>🔔</Text>
-              <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>Notification Center</Text>
-            </View>
-            <Text style={[styles.arrow, { color: colors.textMuted }]}>❯</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={() => navigation.navigate('BreakingNews')}
           >
-            <View style={styles.menuLeft}>
-              <Text style={styles.menuEmoji}>🚨</Text>
+            <Text style={styles.menuIcon}>🚨</Text>
+            <View style={styles.menuContent}>
               <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>Breaking Bulletins</Text>
+              <Text style={[styles.menuSubtitle, { color: colors.textMuted }]}>Live priority wire alerts</Text>
             </View>
-            <Text style={[styles.arrow, { color: colors.textMuted }]}>❯</Text>
+            <ChevronRightIcon color={colors.textMuted} size={15} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={() => navigation.navigate('Settings')}
           >
-            <View style={styles.menuLeft}>
-              <Text style={styles.menuEmoji}>⚙️</Text>
-              <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>Preferences & Themes</Text>
+            <Text style={styles.menuIcon}>⚙️</Text>
+            <View style={styles.menuContent}>
+              <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>Preferences & Stream</Text>
+              <Text style={[styles.menuSubtitle, { color: colors.textMuted }]}>Quality, alerts, notifications</Text>
             </View>
-            <Text style={[styles.arrow, { color: colors.textMuted }]}>❯</Text>
+            <ChevronRightIcon color={colors.textMuted} size={15} />
           </TouchableOpacity>
-
-          {/* Quick Theme Toggle Card */}
-          <View style={[styles.themeCard, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
-            <View style={styles.themeLeft}>
-              <Text style={styles.themeIcon}>{isDark ? '🌙' : '☀️'}</Text>
-              <View>
-                <Text style={[styles.themeTitle, { color: colors.textPrimary }]}>
-                  {isDark ? 'Dark Mode Active' : 'Light Mode Active'}
-                </Text>
-                <Text style={[styles.themeSubtitle, { color: colors.textMuted }]}>
-                  Tap to switch aesthetic
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={[styles.themeToggleBtn, { backgroundColor: colors.accent }]}
-              onPress={toggleTheme}
-            >
-              <Text style={styles.themeToggleText}>Toggle Theme</Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
-        {/* Offline App Info */}
-        <View style={styles.infoBox}>
+        {/* Display Mode Switch */}
+        <View style={styles.menuSection}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>DISPLAY PREFERENCE</Text>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            activeOpacity={0.7}
+            onPress={toggleTheme}
+          >
+            <Text style={styles.menuIcon}>{isDark ? '🌙' : '☀️'}</Text>
+            <View style={styles.menuContent}>
+              <Text style={[styles.menuTitle, { color: colors.textPrimary }]}>
+                {isDark ? 'Dark Theme (OLED Black)' : 'Light Theme (Editorial White)'}
+              </Text>
+              <Text style={[styles.menuSubtitle, { color: colors.textMuted }]}>
+                Tap to toggle current appearance
+              </Text>
+            </View>
+            <View style={[styles.themePill, { backgroundColor: colors.accentSubtle }]}>
+              <Text style={[styles.themePillText, { color: colors.accent }]}>
+                {isDark ? 'DARK' : 'LIGHT'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* App Info Box */}
+        <View style={styles.appInfoSection}>
           <Text style={[styles.appVersion, { color: colors.textMuted }]}>
-            NEXUS NEWS 24 MOBILE • VERSION 1.0.0
+            Nexus News 24 • Global Edition v1.0.4 (Build 88)
           </Text>
-          <Text style={[styles.legalDisclaimer, { color: colors.textMuted }]}>
-            100% Frontend-Only • Fully Bundled Offline Architecture
+          <Text style={[styles.appLegal, { color: colors.textMuted }]}>
+            Encrypted End-to-End • 24/7 Live Broadcast Network
           </Text>
         </View>
       </ScrollView>
@@ -185,9 +182,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   avatarImg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 2,
     borderColor: '#DC2626',
     marginRight: spacing.md,
@@ -198,79 +195,79 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   userName: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...typography.heroHeadline,
+    fontSize: 17,
   },
   verifiedBadge: {
+    backgroundColor: '#38BDF8',
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#38BDF8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 6,
   },
   verifiedIcon: {
-    color: '#FFFFFF',
+    color: '#090D16',
     fontSize: 10,
     fontWeight: '900',
   },
   userEmail: {
-    fontSize: 12,
+    ...typography.caption,
     marginTop: 2,
   },
   subscriberPill: {
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: borderRadius.pill,
     alignSelf: 'flex-start',
     marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#DC2626',
   },
   subscriberText: {
-    color: '#EF4444',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    color: '#DC2626',
+    ...typography.badge,
+    fontSize: 8.5,
   },
   statsBar: {
     flexDirection: 'row',
-    borderRadius: borderRadius.md,
+    justifyContent: 'space-around',
+    alignItems: 'center',
     paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
   },
   statItem: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
   },
   statValue: {
-    fontSize: 16,
-    fontWeight: '900',
+    ...typography.heroHeadline,
+    fontSize: 18,
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...typography.caption,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: '60%',
-    alignSelf: 'center',
-    backgroundColor: 'rgba(150,150,150,0.25)',
+    height: 24,
   },
   menuSection: {
     paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-    marginBottom: spacing.sm + 2,
+    ...typography.badge,
+    fontSize: 11,
+    marginBottom: spacing.sm,
   },
   menuItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.md,
@@ -278,76 +275,40 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     ...shadows.sm,
   },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuEmoji: {
+  menuIcon: {
     fontSize: 18,
     marginRight: spacing.md,
   },
+  menuContent: {
+    flex: 1,
+  },
   menuTitle: {
+    ...typography.cardTitle,
     fontSize: 14,
-    fontWeight: '700',
+    marginBottom: 2,
   },
-  menuRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  menuSubtitle: {
+    ...typography.caption,
   },
-  badgeCount: {
-    fontSize: 13,
-    fontWeight: '800',
-    marginRight: 6,
+  themePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: borderRadius.xs,
   },
-  arrow: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  themeCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    marginTop: spacing.md,
-  },
-  themeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  themeIcon: {
-    fontSize: 22,
-    marginRight: spacing.md,
-  },
-  themeTitle: {
-    fontSize: 13,
+  themePillText: {
+    fontSize: 10,
     fontWeight: '800',
   },
-  themeSubtitle: {
-    fontSize: 11,
-  },
-  themeToggleBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: borderRadius.sm,
-  },
-  themeToggleText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  infoBox: {
+  appInfoSection: {
     alignItems: 'center',
-    marginVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
   appVersion: {
+    ...typography.caption,
     fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
-  legalDisclaimer: {
+  appLegal: {
+    ...typography.caption,
     fontSize: 10,
     marginTop: 4,
   },

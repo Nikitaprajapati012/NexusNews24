@@ -7,7 +7,7 @@ export const getSearchHistory = async (): Promise<string[]> => {
     const raw = await AsyncStorage.getItem(SEARCH_HISTORY_KEY);
     if (!raw) return ['AI Computing', 'Gujarat Metro', 'Sensex', 'Solar Energy', 'Climate Summit'];
     return JSON.parse(raw);
-  } catch (e) {
+  } catch {
     return [];
   }
 };
@@ -21,7 +21,7 @@ export const addSearchQuery = async (query: string): Promise<string[]> => {
     const updated = [trimmed, ...filtered].slice(0, 10);
     await AsyncStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
     return updated;
-  } catch (e) {
+  } catch {
     return [];
   }
 };
@@ -29,5 +29,5 @@ export const addSearchQuery = async (query: string): Promise<string[]> => {
 export const clearSearchHistory = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
-  } catch (e) {}
+  } catch {}
 };

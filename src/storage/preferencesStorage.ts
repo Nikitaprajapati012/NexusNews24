@@ -23,7 +23,7 @@ export const getStoredPreferences = async (): Promise<UserPreferences> => {
     const raw = await AsyncStorage.getItem(PREFERENCES_KEY);
     if (!raw) return defaultPreferences;
     return { ...defaultPreferences, ...JSON.parse(raw) };
-  } catch (e) {
+  } catch {
     return defaultPreferences;
   }
 };
@@ -34,7 +34,7 @@ export const savePreferences = async (prefs: Partial<UserPreferences>): Promise<
     const updated = { ...current, ...prefs };
     await AsyncStorage.setItem(PREFERENCES_KEY, JSON.stringify(updated));
     return updated;
-  } catch (e) {
+  } catch {
     return defaultPreferences;
   }
 };

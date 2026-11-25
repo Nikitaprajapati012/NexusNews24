@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BreakingNewsItem } from '../../data/breakingNewsData';
 import { fetchLiveBreakingNews } from '../../services/newsService';
-import { spacing } from '../../theme/spacing';
+import { spacing, borderRadius } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { ChevronRightIcon } from '../icons/TabIcons';
 
 export const BreakingNewsTicker: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -36,7 +38,7 @@ export const BreakingNewsTicker: React.FC = () => {
   return (
     <TouchableOpacity
       style={styles.container}
-      activeOpacity={0.9}
+      activeOpacity={0.8}
       onPress={() => navigation.navigate('BreakingNews')}
     >
       <View style={styles.badge}>
@@ -48,7 +50,9 @@ export const BreakingNewsTicker: React.FC = () => {
           {currentItem?.tickerText || 'LIVE BREAKING BULLETIN: DEVELOPING STORY AHEAD'}
         </Text>
       </View>
-      <Text style={styles.arrowIcon}>❯</Text>
+      <View style={styles.arrowWrapper}>
+        <ChevronRightIcon color="#FCA5A5" size={13} />
+      </View>
     </TouchableOpacity>
   );
 };
@@ -59,17 +63,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 7,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#991B1B',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   badge: {
     backgroundColor: '#DC2626',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: borderRadius.xs,
     marginRight: 8,
   },
   pulseDot: {
@@ -77,26 +81,23 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FEF08A',
-    marginRight: 4,
+    marginRight: 5,
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.8,
+    ...typography.badge,
+    fontSize: 9.5,
   },
   textWrapper: {
     flex: 1,
+    marginRight: 4,
   },
   headlineText: {
     color: '#FEF08A',
-    fontSize: 12,
-    fontWeight: '700',
+    ...typography.ticker,
   },
-  arrowIcon: {
-    color: '#FCA5A5',
-    fontSize: 12,
-    marginLeft: 6,
-    fontWeight: '900',
+  arrowWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, SafeAreaView, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { VerticalShortCard } from '../../components/video/VerticalShortCard';
 import { ShortNewsItem, SHORT_NEWS_FEED } from '../../data/shortsData';
 import { fetchLiveShorts } from '../../services/videoService';

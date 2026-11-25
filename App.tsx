@@ -5,7 +5,7 @@ import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 const AppContent: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
 
   return (
     <>

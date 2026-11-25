@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Video from 'react-native-video';
 import { LIVE_BROADCAST_DETAILS } from '../../data/liveNewsData';
 import { fetchLiveBreakingNews } from '../../services/newsService';
 import { getLiveBroadcastTime } from '../../utils/dateFormatter';
-import { spacing } from '../../theme/spacing';
+import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { VolumeOnIcon, VolumeOffIcon, PlayIcon, PauseIcon } from '../icons/TabIcons';
 
 const LIVE_STREAM_SOURCES = [
   { uri: 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8' },
@@ -22,7 +24,7 @@ interface Props {
   onPressFullscreen?: () => void;
 }
 
-export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen }) => {
+export const LivePlayer: React.FC<Props> = ({ compact = false }) => {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [clock, setClock] = useState(getLiveBroadcastTime());
@@ -70,7 +72,6 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
         playInBackground={false}
         playWhenInactive={false}
         onError={() => {
-          // If current live stream drops, try next live satellite source
           const nextIndex = streamIndex + 1;
           if (nextIndex < LIVE_STREAM_SOURCES.length) {
             setStreamIndex(nextIndex);
@@ -95,21 +96,29 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
 
         <View style={styles.topOverlayRight}>
           <View style={styles.viewerBadge}>
-            <Text style={styles.viewerText}>👁️ {LIVE_BROADCAST_DETAILS.liveViewers}</Text>
+            <Text style={styles.viewerText}>LIVE {LIVE_BROADCAST_DETAILS.liveViewers}</Text>
           </View>
           <TouchableOpacity
             style={styles.controlCircle}
             onPress={() => setMuted(!muted)}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
-            <Text style={styles.controlIcon}>{muted ? '🔇' : '🔊'}</Text>
+            {muted ? (
+              <VolumeOffIcon color="#FFFFFF" size={14} />
+            ) : (
+              <VolumeOnIcon color="#FFFFFF" size={14} />
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.controlCircle}
             onPress={() => setPaused(!paused)}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
-            <Text style={styles.controlIcon}>{paused ? '▶️' : '⏸️'}</Text>
+            {paused ? (
+              <PlayIcon color="#FFFFFF" size={13} />
+            ) : (
+              <PauseIcon color="#FFFFFF" size={13} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -123,7 +132,7 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
               {LIVE_BROADCAST_DETAILS.currentProgram}
             </Text>
             <Text style={styles.anchorTag}>
-              ANCHOR: {LIVE_BROADCAST_DETAILS.currentAnchor}
+              ANCHOR: {LIVE_BROADCAST_DETAILS.currentAnchor.toUpperCase()}
             </Text>
           </View>
 
@@ -144,8 +153,9 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
       {/* Compact Mode Caption Overlay */}
       {compact && (
         <View style={styles.compactCaptionBar}>
+          <View style={styles.livePulseDot} />
           <Text style={styles.compactCaptionText} numberOfLines={1}>
-            🔴 {LIVE_BROADCAST_DETAILS.currentProgram} • {LIVE_BROADCAST_DETAILS.currentAnchor}
+            {LIVE_BROADCAST_DETAILS.currentProgram} • {LIVE_BROADCAST_DETAILS.currentAnchor}
           </Text>
         </View>
       )}
@@ -153,22 +163,25 @@ export const LivePlayer: React.FC<Props> = ({ compact = false, onPressFullscreen
   );
 };
 
-const { width } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#000000',
     overflow: 'hidden',
     position: 'relative',
+    ...shadows.md,
   },
   compactContainer: {
     width: '100%',
-    height: 200,
-    borderRadius: 12,
+    aspectRatio: 16 / 9,
+    maxHeight: 215,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   fullContainer: {
     width: '100%',
-    height: 230,
+    aspectRatio: 16 / 9,
+    maxHeight: 240,
   },
   video: {
     ...StyleSheet.absoluteFill,
@@ -186,15 +199,15 @@ const styles = StyleSheet.create({
   topOverlayLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   liveBadge: {
     backgroundColor: '#DC2626',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 4,
-    marginRight: 6,
+    borderRadius: borderRadius.pill,
   },
   pulseDot: {
     width: 6,
@@ -205,54 +218,57 @@ const styles = StyleSheet.create({
   },
   liveText: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 10,
-    letterSpacing: 0.8,
+    ...typography.badge,
+    fontSize: 9.5,
   },
   channelTag: {
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    paddingHorizontal: 6,
+    backgroundColor: 'rgba(9, 13, 22, 0.8)',
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: borderRadius.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   channelText: {
     color: '#E2E8F0',
-    fontSize: 10,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 9.5,
   },
   topOverlayRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   viewerBadge: {
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(9, 13, 22, 0.8)',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginRight: 6,
+    paddingVertical: 4,
+    borderRadius: borderRadius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   viewerText: {
-    color: '#FFFFFF',
+    color: '#F8FAFC',
     fontSize: 10,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
   controlCircle: {
-    backgroundColor: 'rgba(0,0,0,0.65)',
     width: 28,
     height: 28,
     borderRadius: 14,
+    backgroundColor: 'rgba(9, 13, 22, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 4,
-  },
-  controlIcon: {
-    fontSize: 13,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   lowerThirdContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 10,
   },
   programBar: {
     backgroundColor: 'rgba(15, 23, 42, 0.92)',
@@ -261,39 +277,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
-    borderLeftWidth: 4,
-    borderLeftColor: '#DC2626',
+    borderTopWidth: 2,
+    borderTopColor: '#DC2626',
   },
   programTitle: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
   anchorTag: {
     color: '#38BDF8',
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   tickerBar: {
-    backgroundColor: '#B91C1C',
+    backgroundColor: '#7F1D1D',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    height: 24,
   },
   tickerClock: {
-    backgroundColor: '#7F1D1D',
+    backgroundColor: '#991B1B',
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 8,
+    height: '100%',
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255,255,255,0.2)',
   },
   clockText: {
     color: '#FEF08A',
     fontSize: 10,
     fontWeight: '900',
+    letterSpacing: 0.5,
   },
   tickerHeadlineBox: {
     flex: 1,
-    paddingRight: 8,
+    paddingHorizontal: spacing.sm,
+    justifyContent: 'center',
   },
   tickerHeadline: {
     color: '#FFFFFF',
@@ -305,13 +327,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: 'rgba(9, 13, 22, 0.85)',
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  livePulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#EF4444',
+    marginRight: 6,
   },
   compactCaptionText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    ...typography.caption,
     fontWeight: '700',
+    flex: 1,
   },
 });

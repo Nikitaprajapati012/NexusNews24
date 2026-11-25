@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NewsArticle } from '../../data/newsData';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { FireIcon } from '../icons/TabIcons';
 
 interface Props {
   articles: NewsArticle[];
@@ -23,7 +25,7 @@ export const TrendingCarousel: React.FC<Props> = ({ articles }) => {
         <TouchableOpacity
           key={article.id}
           style={[styles.trendingCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-          activeOpacity={0.85}
+          activeOpacity={0.8}
           onPress={() => navigation.navigate('NewsDetails', { articleId: article.id })}
         >
           <View style={styles.imageBox}>
@@ -39,9 +41,12 @@ export const TrendingCarousel: React.FC<Props> = ({ articles }) => {
             <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
               {article.title}
             </Text>
-            <Text style={[styles.viewsText, { color: colors.textMuted }]}>
-              🔥 {article.views} views
-            </Text>
+            <View style={styles.viewsRow}>
+              <FireIcon color="#EF4444" size={13} />
+              <Text style={[styles.viewsText, { color: colors.textMuted }]}>
+                {article.views} reads
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       ))}
@@ -56,7 +61,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   trendingCard: {
-    width: 220,
+    width: 210,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     marginRight: spacing.md,
@@ -67,6 +72,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 110,
     position: 'relative',
+    backgroundColor: '#090D16',
   },
   cardImage: {
     width: '100%',
@@ -74,21 +80,20 @@ const styles = StyleSheet.create({
   },
   rankBadge: {
     position: 'absolute',
-    bottom: -12,
+    bottom: -11,
     left: spacing.sm,
     backgroundColor: '#DC2626',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   rankNumber: {
     color: '#FFFFFF',
     fontWeight: '900',
-    fontSize: 12,
+    fontSize: 11,
   },
   cardBody: {
     paddingTop: spacing.md + 2,
@@ -96,19 +101,22 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   categoryTag: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 9.5,
     marginBottom: 4,
   },
   title: {
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 18,
-    marginBottom: 4,
+    ...typography.cardTitle,
+    fontSize: 14,
+    lineHeight: 19,
+    marginBottom: 6,
+  },
+  viewsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   viewsText: {
-    fontSize: 10,
-    fontWeight: '600',
+    ...typography.caption,
   },
 });

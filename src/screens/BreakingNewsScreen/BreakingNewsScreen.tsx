@@ -7,13 +7,15 @@ import {
   TouchableOpacity,
   Image,
   Share,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BreakingNewsItem } from '../../data/breakingNewsData';
 import { fetchLiveBreakingNews } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { ShareIcon } from '../../components/icons/TabIcons';
 
 export const BreakingNewsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -46,17 +48,20 @@ export const BreakingNewsScreen: React.FC = () => {
         message: `🚨 BREAKING NEWS ALERT:\n\n${item.headline}\n\n${item.summary}`,
         title: item.headline,
       });
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#000000' }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Red Alert Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: '#7F1D1D', borderBottomColor: 'rgba(255, 255, 255, 0.1)' }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
         >
           <Text style={styles.backText}>‹ BACK</Text>
         </TouchableOpacity>
@@ -69,7 +74,7 @@ export const BreakingNewsScreen: React.FC = () => {
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Banner Alert Box */}
-        <View style={styles.bannerAlert}>
+        <View style={[styles.bannerAlert, { backgroundColor: '#991B1B' }]}>
           <Text style={styles.bannerTitle}>CRITICAL NEWS DESK • 24/7 VERIFIED ALERTS</Text>
           <Text style={styles.bannerDesc}>
             Priority reports verified by senior editors and ground bureau correspondents before distribution.
@@ -79,30 +84,42 @@ export const BreakingNewsScreen: React.FC = () => {
         {/* Breaking News Feed */}
         <View style={styles.list}>
           {breakingItems.map(item => (
-            <View key={item.id} style={styles.card}>
+            <View
+              key={item.id}
+              style={[
+                styles.card,
+                { backgroundColor: colors.card, borderColor: colors.cardBorder },
+              ]}
+            >
               <View style={styles.cardTopBar}>
                 <View style={styles.urgencyPill}>
                   <Text style={styles.urgencyText}>● {item.urgency} ALERT</Text>
                 </View>
-                <Text style={styles.timestamp}>{item.timestamp}</Text>
+                <Text style={[styles.timestamp, { color: colors.textMuted }]}>{item.timestamp}</Text>
               </View>
 
               <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
 
               <View style={styles.cardBody}>
                 <View style={styles.categoryRow}>
-                  <Text style={styles.categoryTag}>{item.category}</Text>
-                  <TouchableOpacity onPress={() => handleShare(item)} style={styles.shareBtn}>
-                    <Text style={styles.shareIcon}>🔗 SHARE ALERT</Text>
+                  <Text style={[styles.categoryTag, { color: colors.accent }]}>
+                    {item.category.toUpperCase()}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleShare(item)}
+                    style={[styles.shareBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}
+                    activeOpacity={0.7}
+                  >
+                    <ShareIcon color={colors.textPrimary} size={14} />
+                    <Text style={[styles.shareText, { color: colors.textPrimary }]}>SHARE</Text>
                   </TouchableOpacity>
                 </View>
 
-                <Text style={styles.headline}>{item.headline}</Text>
-                <Text style={styles.summary}>{item.summary}</Text>
-
-                <View style={styles.cardFooter}>
-                  <Text style={styles.sourceText}>NEXUS VERIFIED DESK • OFFICIAL RELEASE</Text>
-                </View>
+                <Text style={[styles.headline, { color: colors.textPrimary }]}>{item.headline}</Text>
+                <Text style={[styles.summary, { color: colors.textSecondary }]}>{item.summary}</Text>
+                <Text style={[styles.location, { color: colors.textMuted }]}>
+                  Editorial: Verified wire bulletin
+                </Text>
               </View>
             </View>
           ))}
@@ -116,105 +133,96 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scroll: {
+    flex: 1,
+  },
   header: {
-    backgroundColor: '#7F1D1D',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#991B1B',
   },
   backBtn: {
     paddingVertical: 4,
   },
   backText: {
-    color: '#FEF08A',
-    fontWeight: '900',
-    fontSize: 13,
+    color: '#FFFFFF',
+    ...typography.badge,
+    fontSize: 12,
   },
   headerTitleBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   liveDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#EF4444',
-    marginRight: 6,
+    backgroundColor: '#FEF08A',
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 14,
-    letterSpacing: 0.8,
-  },
-  scroll: {
-    flex: 1,
+    ...typography.badge,
+    fontSize: 12,
   },
   bannerAlert: {
-    backgroundColor: '#1E1B4B',
+    margin: spacing.lg,
     padding: spacing.md,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: '#4338CA',
+    borderLeftWidth: 3,
+    borderLeftColor: '#FEF08A',
   },
   bannerTitle: {
-    color: '#38BDF8',
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-    marginBottom: 2,
+    color: '#FEF08A',
+    ...typography.badge,
+    fontSize: 10.5,
+    marginBottom: 4,
   },
   bannerDesc: {
-    color: '#CBD5E1',
-    fontSize: 11,
+    color: '#FEE2E2',
+    ...typography.caption,
     lineHeight: 16,
   },
   list: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   card: {
-    backgroundColor: '#111827',
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: '#991B1B',
     overflow: 'hidden',
     marginBottom: spacing.lg,
-    ...shadows.md,
+    ...shadows.sm,
   },
   cardTopBar: {
-    backgroundColor: '#7F1D1D',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    padding: spacing.md,
   },
   urgencyPill: {
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
+    backgroundColor: 'rgba(220, 38, 38, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: borderRadius.pill,
+    borderWidth: 1,
+    borderColor: '#DC2626',
   },
   urgencyText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    color: '#DC2626',
+    ...typography.badge,
+    fontSize: 9.5,
   },
   timestamp: {
-    color: '#FEF08A',
-    fontSize: 11,
-    fontWeight: '700',
+    ...typography.caption,
   },
   cardImage: {
     width: '100%',
-    height: 180,
+    aspectRatio: 16 / 9,
+    maxHeight: 190,
   },
   cardBody: {
     padding: spacing.md,
@@ -226,43 +234,36 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   categoryTag: {
-    color: '#EF4444',
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 9.5,
   },
   shareBtn: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: borderRadius.xs,
+    borderWidth: 1,
   },
-  shareIcon: {
-    color: '#FEF08A',
-    fontSize: 10,
-    fontWeight: '800',
+  shareText: {
+    ...typography.badge,
+    fontSize: 9,
   },
   headline: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 22,
+    ...typography.heroHeadline,
+    fontSize: 17,
+    lineHeight: 23,
     marginBottom: 6,
   },
   summary: {
-    color: '#E2E8F0',
-    fontSize: 13,
-    lineHeight: 19,
-    marginBottom: spacing.sm,
+    ...typography.body,
+    fontSize: 13.5,
+    lineHeight: 20,
+    marginBottom: 6,
   },
-  cardFooter: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#374151',
-    paddingTop: 6,
-  },
-  sourceText: {
-    color: '#9CA3AF',
-    fontSize: 10,
-    fontWeight: '600',
+  location: {
+    ...typography.caption,
+    fontStyle: 'italic',
   },
 });

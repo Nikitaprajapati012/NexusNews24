@@ -6,10 +6,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
-  SafeAreaView,
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { BreakingNewsTicker } from '../../components/common/BreakingNewsTicker';
@@ -26,7 +26,10 @@ import {
 import { ShortNewsItem, SHORT_NEWS_FEED } from '../../data/shortsData';
 import { fetchLiveShorts } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
-import { spacing, borderRadius } from '../../theme/spacing';
+import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { GradientOverlay } from '../../components/common/GradientOverlay';
+import { PlayIcon, ChevronRightIcon, FireIcon } from '../../components/icons/TabIcons';
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -40,7 +43,7 @@ export const HomeScreen: React.FC = () => {
   const [categoryArticles, setCategoryArticles] = useState<NewsArticle[]>(() =>
     getCachedArticlesForCategory('all'),
   );
-  const [loading, setLoading] = useState(allArticles.length === 0);
+  const [, setLoading] = useState(allArticles.length === 0);
 
   const loadTopStories = useCallback(async (forceRefresh = false) => {
     const liveAll = await fetchLiveNewsByCategory('all', forceRefresh);
@@ -140,8 +143,10 @@ export const HomeScreen: React.FC = () => {
             <TouchableOpacity
               onPress={() => navigation.navigate('MainTabs', { screen: 'LiveTV' })}
               activeOpacity={0.7}
+              style={styles.seeAllBtn}
             >
-              <Text style={[styles.seeAllText, { color: colors.accent }]}>Full TV Mode ❯</Text>
+              <Text style={[styles.seeAllText, { color: colors.accent }]}>Full TV Mode</Text>
+              <ChevronRightIcon color={colors.accent} size={14} />
             </TouchableOpacity>
           </View>
           <LivePlayer compact={true} />
@@ -155,9 +160,14 @@ export const HomeScreen: React.FC = () => {
           {displayFeatured.length > 0 ? (
             <FeaturedNewsCard article={displayFeatured[0]} />
           ) : (
-            <View style={{ height: 180, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.card, borderRadius: borderRadius.lg }}>
+            <View
+              style={[
+                styles.loaderCard,
+                { backgroundColor: colors.card, borderColor: colors.cardBorder },
+              ]}
+            >
               <ActivityIndicator size="small" color={colors.accent} />
-              <Text style={{ color: colors.textMuted, marginTop: 8, fontSize: 13, fontWeight: '600' }}>
+              <Text style={[styles.loaderText, { color: colors.textMuted }]}>
                 Fetching Live Headlines...
               </Text>
             </View>
@@ -168,8 +178,8 @@ export const HomeScreen: React.FC = () => {
         <View style={styles.sectionNoPadding}>
           <View style={[styles.sectionHeaderRow, { paddingHorizontal: spacing.lg }]}>
             <View style={styles.sectionTitleRow}>
-              <Text style={styles.fireEmoji}>🔥</Text>
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              <FireIcon color="#EF4444" size={17} />
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginLeft: 6 }]}>
                 TRENDING NOW
               </Text>
             </View>
@@ -182,16 +192,18 @@ export const HomeScreen: React.FC = () => {
         <View style={styles.sectionNoPadding}>
           <View style={[styles.sectionHeaderRow, { paddingHorizontal: spacing.lg }]}>
             <View style={styles.sectionTitleRow}>
-              <Text style={styles.fireEmoji}>⚡</Text>
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              <Text style={styles.flashIcon}>⚡</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginLeft: 6 }]}>
                 NEXUS SHORTS
               </Text>
             </View>
             <TouchableOpacity
               onPress={() => navigation.navigate('MainTabs', { screen: 'Shorts' })}
               activeOpacity={0.7}
+              style={styles.seeAllBtn}
             >
-              <Text style={[styles.seeAllText, { color: colors.accent }]}>Watch All ❯</Text>
+              <Text style={[styles.seeAllText, { color: colors.accent }]}>Watch All</Text>
+              <ChevronRightIcon color={colors.accent} size={14} />
             </TouchableOpacity>
           </View>
 
@@ -209,7 +221,7 @@ export const HomeScreen: React.FC = () => {
               return (
                 <TouchableOpacity
                   key={short.id}
-                  style={styles.shortThumbCard}
+                  style={[styles.shortThumbCard, { borderColor: colors.cardBorder }]}
                   activeOpacity={0.85}
                   onPress={() =>
                     navigation.navigate('MainTabs', {
@@ -225,13 +237,18 @@ export const HomeScreen: React.FC = () => {
                       resizeMode="cover"
                     />
                   ) : null}
-                  <View style={styles.shortThumbOverlay} />
+                  <GradientOverlay
+                    direction="bottom-to-top"
+                    startOpacity={0.92}
+                    endOpacity={0.15}
+                    color="#090D16"
+                  />
                   <View style={styles.shortThumbContent}>
                     <View style={styles.shortCategoryTag}>
-                      <Text style={styles.shortCategoryText}>{short.category}</Text>
+                      <Text style={styles.shortCategoryText}>{short.category.toUpperCase()}</Text>
                     </View>
                     <View style={styles.playCenterCircle}>
-                      <Text style={styles.playCenterIcon}>▶</Text>
+                      <PlayIcon color="#FFFFFF" size={14} />
                     </View>
                     <Text style={styles.shortTitle} numberOfLines={2}>
                       {short.headline}
@@ -252,8 +269,10 @@ export const HomeScreen: React.FC = () => {
             <TouchableOpacity
               onPress={() => navigation.navigate('MainTabs', { screen: 'Categories' })}
               activeOpacity={0.7}
+              style={styles.seeAllBtn}
             >
-              <Text style={[styles.seeAllText, { color: colors.accent }]}>All Categories ❯</Text>
+              <Text style={[styles.seeAllText, { color: colors.accent }]}>All Topics</Text>
+              <ChevronRightIcon color={colors.accent} size={14} />
             </TouchableOpacity>
           </View>
 
@@ -274,7 +293,7 @@ export const HomeScreen: React.FC = () => {
                       borderColor: active ? '#DC2626' : colors.cardBorder,
                     },
                   ]}
-                  activeOpacity={0.8}
+                  activeOpacity={0.75}
                   onPress={() => setSelectedCategory(cat.id)}
                 >
                   <Text style={styles.catIcon}>{cat.icon}</Text>
@@ -338,21 +357,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
     marginRight: 6,
   },
-  fireEmoji: {
-    fontSize: 16,
-    marginRight: 6,
+  flashIcon: {
+    fontSize: 15,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.sectionTitle,
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
+  seeAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
   seeAllText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   subCount: {
-    fontSize: 11,
+    ...typography.caption,
+  },
+  loaderCard: {
+    height: 180,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+  },
+  loaderText: {
+    marginTop: 8,
+    fontSize: 13,
     fontWeight: '600',
   },
   shortsScroll: {
@@ -361,21 +395,19 @@ const styles = StyleSheet.create({
   },
   shortThumbCard: {
     width: 140,
-    height: 210,
-    borderRadius: borderRadius.md,
+    height: 220,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
     marginRight: spacing.md,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#090D16',
+    borderWidth: 1,
     position: 'relative',
+    ...shadows.sm,
   },
   shortThumbImage: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: '100%',
     height: '100%',
-  },
-  shortThumbOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.48)',
   },
   shortThumbContent: {
     flex: 1,
@@ -383,34 +415,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   shortCategoryTag: {
-    backgroundColor: 'rgba(220, 38, 38, 0.9)',
+    backgroundColor: 'rgba(220, 38, 38, 0.95)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: borderRadius.xs,
     alignSelf: 'flex-start',
   },
   shortCategoryText: {
     color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 8.5,
   },
   playCenterCircle: {
     alignSelf: 'center',
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  playCenterIcon: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    marginLeft: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   shortTitle: {
     color: '#FFFFFF',
-    fontSize: 11,
+    ...typography.caption,
     fontWeight: '700',
     lineHeight: 15,
   },
@@ -422,11 +451,12 @@ const styles = StyleSheet.create({
   catPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: borderRadius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: borderRadius.pill,
     borderWidth: 1,
     marginRight: spacing.sm,
+    ...shadows.sm,
   },
   catIcon: {
     fontSize: 13,

@@ -7,9 +7,9 @@ import {
   Image,
   TouchableOpacity,
   Share,
-  SafeAreaView,
   Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NewsArticle } from '../../data/newsData';
 import { getLiveArticleById } from '../../services/newsService';
@@ -18,6 +18,8 @@ import { NewsCard } from '../../components/news/NewsCard';
 import { isArticleBookmarked, toggleBookmark } from '../../storage/bookmarkStorage';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { BookmarkIcon, ShareIcon, ClockIcon } from '../../components/icons/TabIcons';
 
 export const NewsDetailsScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -34,7 +36,7 @@ export const NewsDetailsScreen: React.FC = () => {
     if (article) {
       isArticleBookmarked(article.id).then(setBookmarked);
     }
-  }, [article?.id]);
+  }, [article]);
 
   if (!article) {
     return (
@@ -44,22 +46,24 @@ export const NewsDetailsScreen: React.FC = () => {
             style={styles.backBtn}
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
           >
             <Text style={[styles.backIcon, { color: colors.textPrimary }]}>‹ BACK</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl }}>
-          <Text style={{ fontSize: 16, color: colors.textPrimary, fontWeight: '700', marginBottom: spacing.md }}>
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>
             Article Unavailable
           </Text>
-          <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.lg }}>
+          <Text style={[styles.errorDesc, { color: colors.textSecondary }]}>
             This live dispatch is no longer active in cache. Please explore other breaking stories.
           </Text>
           <TouchableOpacity
-            style={{ backgroundColor: colors.accent, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: borderRadius.md }}
+            style={[styles.returnBtn, { backgroundColor: colors.accent }]}
             onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
           >
-            <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Return to Feed</Text>
+            <Text style={styles.returnBtnText}>Return to Feed</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -77,7 +81,9 @@ export const NewsDetailsScreen: React.FC = () => {
         message: `${article.title}\n\nRead the full report on Nexus News 24:\n${article.summary}`,
         title: article.title,
       });
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   };
 
   const relatedArticles = article.relatedIds
@@ -92,14 +98,16 @@ export const NewsDetailsScreen: React.FC = () => {
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
         >
           <Text style={[styles.backIcon, { color: colors.textPrimary }]}>‹ BACK</Text>
         </TouchableOpacity>
 
         <View style={styles.topActions}>
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant }]}
+            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}
             onPress={() => setFontSizeMultiplier(prev => (prev === 1 ? 1.15 : 1))}
+            activeOpacity={0.7}
           >
             <Text style={[styles.actionBtnText, { color: colors.textPrimary }]}>
               {fontSizeMultiplier > 1 ? 'A-' : 'A+'}
@@ -107,17 +115,23 @@ export const NewsDetailsScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant }]}
+            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}
             onPress={handleShare}
+            activeOpacity={0.7}
           >
-            <Text style={styles.actionIcon}>🔗</Text>
+            <ShareIcon color={colors.textPrimary} size={16} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant }]}
+            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}
             onPress={handleToggleBookmark}
+            activeOpacity={0.7}
           >
-            <Text style={styles.actionIcon}>{bookmarked ? '🔖' : '🏷️'}</Text>
+            <BookmarkIcon
+              color={bookmarked ? '#DC2626' : colors.textPrimary}
+              size={16}
+              focused={bookmarked}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -132,18 +146,21 @@ export const NewsDetailsScreen: React.FC = () => {
           {/* Metadata Bar */}
           <View style={styles.categoryRow}>
             <CategoryBadge category={article.categoryName} size="medium" />
-            <Text style={[styles.readTime, { color: colors.textMuted }]}>
-              ⏱️ {article.readTime} • {article.publishedAt}
-            </Text>
+            <View style={styles.readTimeWrapper}>
+              <ClockIcon color={colors.textMuted} size={12} />
+              <Text style={[styles.readTime, { color: colors.textMuted }]}>
+                {article.readTime} • {article.publishedAt}
+              </Text>
+            </View>
           </View>
 
           {/* Headline */}
-          <Text style={[styles.headline, { color: colors.textPrimary, fontSize: 22 * fontSizeMultiplier }]}>
+          <Text style={[styles.headline, { color: colors.textPrimary, fontSize: 23 * fontSizeMultiplier }]}>
             {article.title}
           </Text>
 
           {/* Author Card */}
-          <View style={[styles.authorCard, { backgroundColor: colors.surfaceVariant }]}>
+          <View style={[styles.authorCard, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}>
             <View style={styles.authorAvatar}>
               <Text style={styles.authorAvatarText}>{article.author[0]}</Text>
             </View>
@@ -158,8 +175,8 @@ export const NewsDetailsScreen: React.FC = () => {
           </View>
 
           {/* Lead Summary Callout */}
-          <View style={[styles.summaryCallout, { borderLeftColor: colors.accent, backgroundColor: colors.card }]}>
-            <Text style={[styles.summaryText, { color: colors.textSecondary, fontSize: 15 * fontSizeMultiplier }]}>
+          <View style={[styles.summaryCallout, { borderLeftColor: colors.accent, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <Text style={[styles.summaryText, { color: colors.textSecondary, fontSize: 14.5 * fontSizeMultiplier }]}>
               {article.summary}
             </Text>
           </View>
@@ -173,8 +190,8 @@ export const NewsDetailsScreen: React.FC = () => {
                   styles.paragraph,
                   {
                     color: colors.textPrimary,
-                    fontSize: 16 * fontSizeMultiplier,
-                    lineHeight: 26 * fontSizeMultiplier,
+                    fontSize: 15.5 * fontSizeMultiplier,
+                    lineHeight: 25 * fontSizeMultiplier,
                   },
                 ]}
               >
@@ -185,20 +202,20 @@ export const NewsDetailsScreen: React.FC = () => {
 
           {article.sourceUrl ? (
             <TouchableOpacity
-              style={[styles.takeawaysCard, { backgroundColor: colors.accent, borderColor: colors.accent, alignItems: 'center' }]}
-              activeOpacity={0.85}
+              style={[styles.fullStoryBtn, { backgroundColor: colors.accent }]}
+              activeOpacity={0.8}
               onPress={() => Linking.openURL(article.sourceUrl!)}
             >
-              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+              <Text style={styles.fullStoryBtnText}>
                 READ FULL STORY ON {article.author.toUpperCase()} ↗
               </Text>
             </TouchableOpacity>
           ) : null}
 
           {/* Key Takeaways Box */}
-          <View style={[styles.takeawaysCard, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
+          <View style={[styles.takeawaysCard, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}>
             <Text style={[styles.takeawaysTitle, { color: colors.accent }]}>
-              📌 KEY TAKEAWAYS & VERIFICATION
+              KEY TAKEAWAYS & VERIFICATION
             </Text>
             <Text style={[styles.takeawayPoint, { color: colors.textSecondary }]}>
               • Validated by Nexus News 24 fact-checking desk and public record registries.
@@ -212,14 +229,16 @@ export const NewsDetailsScreen: React.FC = () => {
           </View>
 
           {/* Related Articles Carousel */}
-          <View style={styles.relatedSection}>
-            <Text style={[styles.relatedTitle, { color: colors.textPrimary }]}>
-              RELATED COVERAGE
-            </Text>
-            {relatedArticles.map(rel => (
-              <NewsCard key={rel.id} article={rel} horizontal={true} />
-            ))}
-          </View>
+          {relatedArticles.length > 0 && (
+            <View style={styles.relatedSection}>
+              <Text style={[styles.relatedTitle, { color: colors.textPrimary }]}>
+                RELATED COVERAGE
+              </Text>
+              {relatedArticles.map(rel => (
+                <NewsCard key={rel.id} article={rel} horizontal={true} />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -230,47 +249,46 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scroll: {
+    flex: 1,
+  },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 2,
     borderBottomWidth: 1,
   },
   backBtn: {
     paddingVertical: 4,
   },
   backIcon: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   topActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   actionBtn: {
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
   },
   actionBtnText: {
-    fontSize: 12,
     fontWeight: '800',
-  },
-  actionIcon: {
-    fontSize: 15,
-  },
-  scroll: {
-    flex: 1,
+    fontSize: 12,
   },
   imageBox: {
     width: '100%',
-    height: 230,
+    aspectRatio: 16 / 9,
+    backgroundColor: '#090D16',
   },
   heroImage: {
     width: '100%',
@@ -285,13 +303,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
+  readTimeWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   readTime: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...typography.caption,
   },
   headline: {
-    fontWeight: '900',
-    lineHeight: 30,
+    ...typography.display,
+    fontSize: 23,
+    lineHeight: 31,
     marginBottom: spacing.md,
   },
   authorCard: {
@@ -299,32 +322,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
     marginBottom: spacing.lg,
   },
   authorAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#DC2626',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: spacing.md,
+    marginRight: 10,
   },
   authorAvatarText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
+    fontSize: 15,
   },
   authorName: {
+    ...typography.cardTitle,
     fontSize: 13,
-    fontWeight: '700',
   },
   authorRole: {
+    ...typography.caption,
     fontSize: 11,
-    marginTop: 2,
   },
   summaryCallout: {
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
+    borderWidth: 1,
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     marginBottom: spacing.lg,
@@ -332,7 +357,6 @@ const styles = StyleSheet.create({
   summaryText: {
     fontStyle: 'italic',
     lineHeight: 22,
-    fontWeight: '600',
   },
   bodySection: {
     marginBottom: spacing.lg,
@@ -340,30 +364,68 @@ const styles = StyleSheet.create({
   paragraph: {
     marginBottom: spacing.md,
   },
+  fullStoryBtn: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    ...shadows.sm,
+  },
+  fullStoryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
   takeawaysCard: {
     padding: spacing.lg,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     marginBottom: spacing.xl,
   },
   takeawaysTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 11,
     marginBottom: spacing.sm,
   },
   takeawayPoint: {
-    fontSize: 12,
-    lineHeight: 18,
+    ...typography.body,
+    fontSize: 13,
+    lineHeight: 20,
     marginBottom: 4,
   },
   relatedSection: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   relatedTitle: {
+    ...typography.sectionTitle,
     fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: 0.5,
     marginBottom: spacing.md,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  errorTitle: {
+    ...typography.heroHeadline,
+    marginBottom: spacing.md,
+  },
+  errorDesc: {
+    ...typography.body,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  returnBtn: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: borderRadius.md,
+  },
+  returnBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
 });

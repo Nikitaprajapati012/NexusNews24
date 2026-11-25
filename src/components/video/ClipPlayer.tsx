@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Video from 'react-native-video';
 import { RecordedClip } from '../../data/clipsData';
-import { spacing, borderRadius } from '../../theme/spacing';
+import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { PlayIcon, VolumeOnIcon, VolumeOffIcon } from '../icons/TabIcons';
 
 interface Props {
   clip: RecordedClip;
@@ -46,11 +48,16 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
           <TouchableOpacity
             style={styles.circleBtn}
             onPress={() => setMuted(!muted)}
+            activeOpacity={0.7}
           >
-            <Text style={styles.iconText}>{muted ? '🔇' : '🔊'}</Text>
+            {muted ? (
+              <VolumeOffIcon color="#FFFFFF" size={14} />
+            ) : (
+              <VolumeOnIcon color="#FFFFFF" size={14} />
+            )}
           </TouchableOpacity>
           {onClose && (
-            <TouchableOpacity style={styles.circleBtn} onPress={onClose}>
+            <TouchableOpacity style={styles.circleBtn} onPress={onClose} activeOpacity={0.7}>
               <Text style={styles.iconText}>✕</Text>
             </TouchableOpacity>
           )}
@@ -65,7 +72,7 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
       >
         {paused && (
           <View style={styles.playOverlay}>
-            <Text style={styles.playIcon}>▶</Text>
+            <PlayIcon color="#FFFFFF" size={18} />
           </View>
         )}
       </TouchableOpacity>
@@ -79,7 +86,7 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
           {clip.title}
         </Text>
         <View style={styles.infoMeta}>
-          <Text style={styles.metaText}>{clip.duration} • {clip.views}</Text>
+          <Text style={styles.metaText}>{clip.duration} • {clip.views} views</Text>
           <Text style={styles.metaText}>{clip.publishedAt}</Text>
         </View>
       </View>
@@ -87,16 +94,18 @@ export const ClipPlayer: React.FC<Props> = ({ clip, onClose }) => {
   );
 };
 
-const { width } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 220,
+    aspectRatio: 16 / 9,
+    maxHeight: 220,
     backgroundColor: '#000000',
     position: 'relative',
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    ...shadows.md,
   },
   video: {
     ...StyleSheet.absoluteFill,
@@ -115,83 +124,86 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(220, 38, 38, 0.9)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: borderRadius.pill,
   },
   categoryText: {
     color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 9.5,
   },
   topRightControls: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   circleBtn: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(9, 13, 22, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   iconText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '800',
   },
   centerTouch: {
     ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 5,
   },
   playOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(9, 13, 22, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  playIcon: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    marginLeft: 3,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    paddingLeft: 3,
   },
   bottomRow: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.85)',
+    backgroundColor: 'rgba(9, 13, 22, 0.88)',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingTop: 6,
+    paddingBottom: spacing.sm,
+    zIndex: 10,
   },
   progressBarBg: {
-    width: '100%',
-    height: 3,
-    backgroundColor: '#334155',
+    height: 2.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 1,
     marginBottom: 6,
-    borderRadius: 1.5,
+    overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: '#DC2626',
-    borderRadius: 1.5,
   },
   title: {
     color: '#FFFFFF',
+    ...typography.cardTitle,
     fontSize: 13,
-    fontWeight: '700',
+    lineHeight: 18,
+    marginBottom: 2,
   },
   infoMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
   },
   metaText: {
     color: '#94A3B8',
-    fontSize: 10,
-    fontWeight: '500',
+    ...typography.caption,
   },
 });

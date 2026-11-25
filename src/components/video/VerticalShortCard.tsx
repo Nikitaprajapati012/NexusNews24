@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Share, Image } from 'react-native';
 import Video from 'react-native-video';
 import { ShortNewsItem } from '../../data/shortsData';
-import { spacing } from '../../theme/spacing';
+import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { GradientOverlay } from '../common/GradientOverlay';
+import {
+  HeartIcon,
+  BookmarkIcon,
+  ShareIcon,
+  VolumeOnIcon,
+  VolumeOffIcon,
+  PauseIcon,
+} from '../icons/TabIcons';
 
 interface Props {
   item: ShortNewsItem;
@@ -21,7 +31,9 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
         message: `${item.headline}\n\nWatch on Nexus Shorts ⚡:\n${item.caption}`,
         title: item.headline,
       });
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   };
 
   const posterUri =
@@ -59,7 +71,7 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
       >
         {paused && (
           <View style={styles.pauseBadge}>
-            <Text style={styles.pauseIcon}>⏸️</Text>
+            <PauseIcon color="#FFFFFF" size={24} />
           </View>
         )}
       </TouchableOpacity>
@@ -67,13 +79,18 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
       {/* Top Bar Overlay */}
       <View style={styles.topBar}>
         <View style={styles.liveShortTag}>
-          <Text style={styles.liveShortText}>⚡ {item.category}</Text>
+          <Text style={styles.liveShortText}>⚡ {item.category.toUpperCase()}</Text>
         </View>
         <TouchableOpacity
           style={styles.muteBtn}
           onPress={() => setMuted(!muted)}
+          activeOpacity={0.7}
         >
-          <Text style={styles.muteIcon}>{muted ? '🔇' : '🔊'}</Text>
+          {muted ? (
+            <VolumeOffIcon color="#FFFFFF" size={16} />
+          ) : (
+            <VolumeOnIcon color="#FFFFFF" size={16} />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -84,7 +101,9 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
           onPress={() => setLiked(!liked)}
           activeOpacity={0.7}
         >
-          <Text style={styles.actionEmoji}>{liked ? '❤️' : '🤍'}</Text>
+          <View style={styles.actionIconCircle}>
+            <HeartIcon color={liked ? '#EF4444' : '#FFFFFF'} size={20} focused={liked} />
+          </View>
           <Text style={styles.actionLabel}>{liked ? '143K' : item.likes}</Text>
         </TouchableOpacity>
 
@@ -93,7 +112,9 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
           onPress={() => setBookmarked(!bookmarked)}
           activeOpacity={0.7}
         >
-          <Text style={styles.actionEmoji}>{bookmarked ? '🔖' : '🏷️'}</Text>
+          <View style={styles.actionIconCircle}>
+            <BookmarkIcon color={bookmarked ? '#DC2626' : '#FFFFFF'} size={18} focused={bookmarked} />
+          </View>
           <Text style={styles.actionLabel}>Save</Text>
         </TouchableOpacity>
 
@@ -102,20 +123,28 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
           onPress={handleShare}
           activeOpacity={0.7}
         >
-          <Text style={styles.actionEmoji}>🔗</Text>
+          <View style={styles.actionIconCircle}>
+            <ShareIcon color="#FFFFFF" size={18} />
+          </View>
           <Text style={styles.actionLabel}>Share</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Content Info */}
+      {/* Bottom Content Info with Gradient Overlay */}
       <View style={styles.bottomContent}>
+        <GradientOverlay
+          direction="bottom-to-top"
+          startOpacity={0.95}
+          endOpacity={0.0}
+          color="#090D16"
+        />
         <View style={styles.channelRow}>
           <View style={styles.channelAvatar}>
             <Text style={styles.channelAvatarText}>24</Text>
           </View>
           <Text style={styles.channelName}>{item.channel}</Text>
           <View style={styles.followBadge}>
-            <Text style={styles.followText}>OFFICIAL</Text>
+            <Text style={styles.followText}>VERIFIED</Text>
           </View>
         </View>
 
@@ -152,15 +181,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pauseBadge: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  pauseIcon: {
-    fontSize: 28,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...shadows.md,
   },
   topBar: {
     flexDirection: 'row',
@@ -171,27 +200,26 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   liveShortTag: {
-    backgroundColor: 'rgba(220, 38, 38, 0.85)',
+    backgroundColor: 'rgba(220, 38, 38, 0.9)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: borderRadius.pill,
+    ...shadows.sm,
   },
   liveShortText: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 11,
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 10,
   },
   muteBtn: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     width: 36,
     height: 36,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  muteIcon: {
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   sideActions: {
     position: 'absolute',
@@ -204,20 +232,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.lg,
   },
-  actionEmoji: {
-    fontSize: 28,
+  actionIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     marginBottom: 4,
+    ...shadows.sm,
   },
   actionLabel: {
     color: '#FFFFFF',
-    fontSize: 11,
+    ...typography.caption,
     fontWeight: '700',
   },
   bottomContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl + 10,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingTop: spacing.md,
+    paddingTop: spacing.xxxl,
+    position: 'relative',
     zIndex: 10,
   },
   channelRow: {
@@ -246,26 +282,28 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   followBadge: {
-    backgroundColor: '#1E293B',
+    backgroundColor: 'rgba(56, 189, 248, 0.2)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 3,
+    borderRadius: borderRadius.xs,
+    borderWidth: 0.5,
+    borderColor: '#38BDF8',
   },
   followText: {
     color: '#38BDF8',
     fontSize: 9,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   headline: {
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 21,
+    ...typography.cardTitle,
+    fontSize: 16,
+    lineHeight: 22,
     marginBottom: 4,
   },
   caption: {
     color: '#CBD5E1',
-    fontSize: 12,
-    lineHeight: 16,
+    ...typography.cardSubtitle,
   },
 });

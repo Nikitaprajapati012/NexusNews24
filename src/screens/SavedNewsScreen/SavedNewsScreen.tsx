@@ -5,8 +5,8 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NewsCard } from '../../components/news/NewsCard';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -15,6 +15,7 @@ import { NewsArticle } from '../../data/newsData';
 import { getLiveArticleById } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 
 export const SavedNewsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -41,6 +42,7 @@ export const SavedNewsScreen: React.FC = () => {
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
         >
           <Text style={[styles.backText, { color: colors.textPrimary }]}>‹ BACK</Text>
         </TouchableOpacity>
@@ -82,37 +84,35 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scroll: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
     borderBottomWidth: 1,
   },
   backBtn: {
     paddingVertical: 4,
   },
   backText: {
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 12,
   },
   headerTitle: {
+    ...typography.headerTitle,
     fontSize: 15,
-    fontWeight: '900',
     letterSpacing: 0.5,
-  },
-  scroll: {
-    flex: 1,
   },
   container: {
     padding: spacing.lg,
   },
   countText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 10,
     marginBottom: spacing.md,
   },
 });

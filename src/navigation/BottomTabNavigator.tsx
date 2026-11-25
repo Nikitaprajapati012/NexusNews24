@@ -16,6 +16,7 @@ import {
   ProfileIcon,
 } from '../components/icons/TabIcons';
 import { useTheme } from '../theme/ThemeContext';
+import { typography } from '../theme/typography';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,8 +28,8 @@ export const BottomTabNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? '#0B1120' : '#FFFFFF',
-          borderTopColor: isDark ? '#1E293B' : '#E2E8F0',
+          backgroundColor: isDark ? '#090D16' : '#FFFFFF',
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 64,
           paddingBottom: Platform.OS === 'ios' ? 24 : 8,
@@ -36,15 +37,14 @@ export const BottomTabNavigator: React.FC = () => {
           elevation: 12,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: isDark ? 0.4 : 0.08,
+          shadowOpacity: isDark ? 0.35 : 0.08,
           shadowRadius: 8,
         },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: isDark ? '#64748B' : '#94A3B8',
         tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '700',
-          letterSpacing: 0.3,
+          ...typography.badge,
+          fontSize: 9.5,
           marginTop: 2,
         },
       }}
@@ -56,7 +56,7 @@ export const BottomTabNavigator: React.FC = () => {
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && { backgroundColor: color + '15' }]}>
-              <HomeIcon color={color} size={21} focused={focused} />
+              <HomeIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -70,7 +70,7 @@ export const BottomTabNavigator: React.FC = () => {
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && { backgroundColor: color + '15' }]}>
               <View style={styles.livePulseDot} />
-              <LiveTvIcon color={color} size={21} focused={focused} />
+              <LiveTvIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -83,7 +83,7 @@ export const BottomTabNavigator: React.FC = () => {
           tabBarLabel: 'Clips',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && { backgroundColor: color + '15' }]}>
-              <ClipsIcon color={color} size={21} focused={focused} />
+              <ClipsIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -99,7 +99,7 @@ export const BottomTabNavigator: React.FC = () => {
               <View style={styles.flashBadge}>
                 <Text style={styles.flashBadgeText}>⚡</Text>
               </View>
-              <ShortsIcon color={color} size={21} focused={focused} />
+              <ShortsIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -112,7 +112,7 @@ export const BottomTabNavigator: React.FC = () => {
           tabBarLabel: 'Explore',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && { backgroundColor: color + '15' }]}>
-              <ExploreIcon color={color} size={21} focused={focused} />
+              <ExploreIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -125,7 +125,7 @@ export const BottomTabNavigator: React.FC = () => {
           tabBarLabel: 'Account',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && { backgroundColor: color + '15' }]}>
-              <ProfileIcon color={color} size={21} focused={focused} />
+              <ProfileIcon color={color} size={20} focused={focused} />
             </View>
           ),
         }}
@@ -136,7 +136,7 @@ export const BottomTabNavigator: React.FC = () => {
 
 const styles = StyleSheet.create({
   iconWrapper: {
-    width: 38,
+    width: 36,
     height: 28,
     borderRadius: 14,
     alignItems: 'center',

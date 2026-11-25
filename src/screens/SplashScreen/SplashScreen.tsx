@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../../theme/ThemeContext';
 import { spacing } from '../../theme/spacing';
 
 export const SplashScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const { colors } = useTheme();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
@@ -46,7 +44,7 @@ export const SplashScreen: React.FC = () => {
     }, 2200);
 
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, fadeAnim, pulseAnim, scaleAnim]);
 
   return (
     <View style={[styles.container, { backgroundColor: '#0B0F19' }]}>

@@ -5,8 +5,8 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/common/AppHeader';
 import { NewsCard } from '../../components/news/NewsCard';
 import { CATEGORIES } from '../../data/categoriesData';
@@ -17,6 +17,7 @@ import {
 } from '../../services/newsService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 
 export const CategoriesScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -68,7 +69,7 @@ export const CategoriesScreen: React.FC = () => {
                     borderColor: isSelected ? cat.badgeColor : colors.cardBorder,
                   },
                 ]}
-                activeOpacity={0.8}
+                activeOpacity={0.75}
                 onPress={() => setSelectedCatId(cat.id)}
               >
                 <Text style={styles.gridEmoji}>{cat.icon}</Text>
@@ -87,7 +88,7 @@ export const CategoriesScreen: React.FC = () => {
         </View>
 
         {/* Category Description Banner */}
-        <View style={[styles.descBanner, { backgroundColor: activeCategory.badgeColor + '20', borderColor: activeCategory.badgeColor }]}>
+        <View style={[styles.descBanner, { backgroundColor: activeCategory.badgeColor + '18', borderColor: activeCategory.badgeColor + '50' }]}>
           <View style={styles.descTitleRow}>
             <Text style={styles.descIcon}>{activeCategory.icon}</Text>
             <Text style={[styles.descTitle, { color: activeCategory.badgeColor }]}>
@@ -106,8 +107,8 @@ export const CategoriesScreen: React.FC = () => {
               <NewsCard key={article.id} article={article} />
             ))
           ) : (
-            <View style={{ padding: spacing.xl, alignItems: 'center' }}>
-              <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+            <View style={styles.loaderBox}>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>
                 Loading {activeCategory.name} Live Reports...
               </Text>
             </View>
@@ -131,12 +132,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.sectionTitle,
   },
   subtitle: {
-    fontSize: 12,
+    ...typography.caption,
     marginTop: 4,
   },
   grid: {
@@ -150,18 +149,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
     borderRadius: borderRadius.md,
-    borderWidth: 1.5,
+    borderWidth: 1,
     alignItems: 'center',
     marginBottom: spacing.sm,
     ...shadows.sm,
   },
   gridEmoji: {
-    fontSize: 22,
+    fontSize: 20,
     marginBottom: 4,
   },
   gridName: {
-    fontSize: 11,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 10,
     textAlign: 'center',
   },
   descBanner: {
@@ -177,19 +176,22 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   descIcon: {
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 6,
   },
   descTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    ...typography.badge,
+    fontSize: 11,
   },
   descBody: {
-    fontSize: 12,
+    ...typography.caption,
     lineHeight: 16,
   },
   articlesList: {
     padding: spacing.lg,
+  },
+  loaderBox: {
+    padding: spacing.xl,
+    alignItems: 'center',
   },
 });

@@ -5,10 +5,10 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { LivePlayer } from '../../components/video/LivePlayer';
@@ -17,6 +17,8 @@ import { RecordedClip, RECORDED_CLIPS } from '../../data/clipsData';
 import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { PlayIcon, FireIcon } from '../../components/icons/TabIcons';
 
 export const LiveTVScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -53,7 +55,7 @@ export const LiveTVScreen: React.FC = () => {
               <Text style={[styles.channelTitle, { color: colors.textPrimary }]}>
                 {LIVE_BROADCAST_DETAILS.channelName}
               </Text>
-              <View style={[styles.hdBadge, { backgroundColor: isDark ? '#0F172A' : '#EFF6FF', borderColor: colors.accent }]}>
+              <View style={[styles.hdBadge, { backgroundColor: colors.accentSubtle, borderColor: colors.accent }]}>
                 <Text style={[styles.hdText, { color: colors.accent }]}>ULTRA HD</Text>
               </View>
             </View>
@@ -65,7 +67,7 @@ export const LiveTVScreen: React.FC = () => {
           <View style={styles.serverStatus}>
             <View style={styles.greenDot} />
             <Text style={[styles.serverText, { color: colors.success }]}>
-              LIVE SATELLITE FEED ONLINE
+              SATELLITE ONLINE
             </Text>
           </View>
         </View>
@@ -73,7 +75,10 @@ export const LiveTVScreen: React.FC = () => {
         {/* Program Description Card */}
         <View style={[styles.programCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={styles.nowPlayingRow}>
-            <Text style={styles.nowPlayingPill}>NOW AIRING</Text>
+            <View style={styles.nowPlayingBadge}>
+              <View style={styles.livePulseDot} />
+              <Text style={styles.nowPlayingPill}>NOW AIRING</Text>
+            </View>
             <Text style={[styles.studioLocation, { color: colors.textMuted }]}>
               📍 {LIVE_BROADCAST_DETAILS.currentLocation}
             </Text>
@@ -98,6 +103,7 @@ export const LiveTVScreen: React.FC = () => {
               activeTab === 'schedule' && [styles.activeTabBtn, { borderBottomColor: colors.accent }],
             ]}
             onPress={() => setActiveTab('schedule')}
+            activeOpacity={0.7}
           >
             <Text
               style={[
@@ -105,7 +111,7 @@ export const LiveTVScreen: React.FC = () => {
                 { color: activeTab === 'schedule' ? colors.accent : colors.textMuted },
               ]}
             >
-              📅 TODAY'S SCHEDULE
+              TODAY'S SCHEDULE
             </Text>
           </TouchableOpacity>
 
@@ -115,6 +121,7 @@ export const LiveTVScreen: React.FC = () => {
               activeTab === 'highlights' && [styles.activeTabBtn, { borderBottomColor: colors.accent }],
             ]}
             onPress={() => setActiveTab('highlights')}
+            activeOpacity={0.7}
           >
             <Text
               style={[
@@ -122,7 +129,7 @@ export const LiveTVScreen: React.FC = () => {
                 { color: activeTab === 'highlights' ? colors.accent : colors.textMuted },
               ]}
             >
-              📹 BROADCAST CLIPS
+              BROADCAST CLIPS
             </Text>
           </TouchableOpacity>
         </View>
@@ -142,7 +149,7 @@ export const LiveTVScreen: React.FC = () => {
                   style={[
                     styles.scheduleCard,
                     {
-                      backgroundColor: item.isCurrent ? (colors.accent + '12') : colors.card,
+                      backgroundColor: item.isCurrent ? colors.accentSubtle : colors.card,
                       borderColor: item.isCurrent ? colors.accent : colors.cardBorder,
                     },
                     item.isCurrent && styles.scheduleCardActive,
@@ -180,7 +187,7 @@ export const LiveTVScreen: React.FC = () => {
                         {item.category?.toUpperCase() || 'NEWS'}
                       </Text>
                       <Text style={[styles.programTimeText, { color: item.isCurrent ? colors.accent : colors.textMuted }]}>
-                        🕒 {item.time}
+                        {item.time}
                       </Text>
                     </View>
 
@@ -188,14 +195,9 @@ export const LiveTVScreen: React.FC = () => {
                       {item.title}
                     </Text>
 
-                    <View style={styles.hostRow}>
-                      <View style={styles.hostIconBox}>
-                        <Text style={styles.hostIcon}>🎙️</Text>
-                      </View>
-                      <Text style={[styles.hostName, { color: colors.textSecondary }]} numberOfLines={1}>
-                        Host: {item.anchor}
-                      </Text>
-                    </View>
+                    <Text style={[styles.hostName, { color: colors.textSecondary }]} numberOfLines={1}>
+                      Host: {item.anchor}
+                    </Text>
                   </View>
                 </View>
               );
@@ -224,7 +226,7 @@ export const LiveTVScreen: React.FC = () => {
                   <TouchableOpacity
                     key={clip.id}
                     style={[styles.clipCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                    activeOpacity={0.85}
+                    activeOpacity={0.8}
                     onPress={() => navigation.navigate('MainTabs', { screen: 'Clips', params: { clipId: clip.id } })}
                   >
                     {/* Clip Thumbnail with Play Icon & Duration */}
@@ -240,7 +242,7 @@ export const LiveTVScreen: React.FC = () => {
                       )}
                       <View style={styles.clipThumbOverlay} />
                       <View style={styles.clipPlayCircle}>
-                        <Text style={styles.clipPlayArrow}>▶</Text>
+                        <PlayIcon color="#FFFFFF" size={12} />
                       </View>
                       <View style={styles.clipDurationBadge}>
                         <Text style={styles.clipDurationText}>{clip.duration}</Text>
@@ -259,8 +261,9 @@ export const LiveTVScreen: React.FC = () => {
                         {clip.title}
                       </Text>
                       <View style={styles.clipFooterRow}>
+                        <FireIcon color="#EF4444" size={11} />
                         <Text style={[styles.clipMetaText, { color: colors.textMuted }]}>
-                          🔥 {clip.views}
+                          {clip.views} reads
                         </Text>
                         <Text style={[styles.clipDotSeparator, { color: colors.textMuted }]}>•</Text>
                         <Text style={[styles.clipMetaText, { color: colors.textMuted }]}>
@@ -303,30 +306,26 @@ const styles = StyleSheet.create({
   channelRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   channelTitle: {
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   hdBadge: {
-    backgroundColor: '#0F172A',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 3,
-    marginLeft: 6,
+    borderRadius: borderRadius.xs,
     borderWidth: 1,
-    borderColor: '#38BDF8',
   },
   hdText: {
-    color: '#38BDF8',
     fontSize: 9,
     fontWeight: '800',
   },
   tagline: {
-    fontSize: 11,
+    ...typography.caption,
     marginTop: 2,
-    fontWeight: '500',
   },
   serverStatus: {
     flexDirection: 'row',
@@ -340,8 +339,9 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   serverText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
   programCard: {
     margin: spacing.lg,
@@ -356,23 +356,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xs,
   },
+  nowPlayingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   nowPlayingPill: {
     color: '#DC2626',
-    fontWeight: '900',
-    fontSize: 11,
-    letterSpacing: 0.8,
+    ...typography.badge,
+    fontSize: 10,
   },
   studioLocation: {
-    fontSize: 11,
+    ...typography.caption,
     fontWeight: '600',
   },
   currentProgramTitle: {
+    ...typography.heroHeadline,
     fontSize: 18,
-    fontWeight: '800',
     marginBottom: 4,
   },
   anchorDetails: {
-    fontSize: 13,
+    ...typography.cardSubtitle,
     fontWeight: '600',
     marginBottom: spacing.sm,
   },
@@ -381,14 +385,14 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
   },
   bulletinSummary: {
-    fontSize: 12,
-    lineHeight: 18,
+    ...typography.body,
+    fontSize: 13,
+    lineHeight: 19,
   },
   tabsContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
   },
   tabBtn: {
     flex: 1,
@@ -398,11 +402,11 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTabBtn: {
-    borderBottomWidth: 3,
+    borderBottomWidth: 2,
   },
   tabText: {
-    fontSize: 13,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 11,
   },
   scheduleList: {
     paddingHorizontal: spacing.lg,
@@ -416,6 +420,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: spacing.md,
     alignItems: 'center',
+    ...shadows.sm,
   },
   scheduleCardActive: {
     borderWidth: 1.5,
@@ -426,15 +431,15 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#090D16',
   },
   programThumb: {
     width: '100%',
     height: '100%',
   },
   programThumbOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(9, 13, 22, 0.35)',
   },
   onAirBadge: {
     position: 'absolute',
@@ -445,7 +450,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 3,
+    borderRadius: borderRadius.xs,
   },
   livePulseDot: {
     width: 5,
@@ -456,18 +461,17 @@ const styles = StyleSheet.create({
   },
   onAirBadgeText: {
     color: '#FFFFFF',
+    ...typography.badge,
     fontSize: 8,
-    fontWeight: '900',
-    letterSpacing: 0.5,
   },
   timeTagBadge: {
     position: 'absolute',
     bottom: 5,
     right: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(9, 13, 22, 0.85)',
     paddingHorizontal: 5,
     paddingVertical: 2,
-    borderRadius: 3,
+    borderRadius: borderRadius.xs,
   },
   timeTagText: {
     color: '#FFFFFF',
@@ -486,33 +490,21 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   programCategory: {
+    ...typography.badge,
     fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
   programTimeText: {
-    fontSize: 10,
+    ...typography.caption,
     fontWeight: '700',
   },
   programTitle: {
+    ...typography.cardTitle,
     fontSize: 13,
-    fontWeight: '700',
     lineHeight: 18,
     marginBottom: 4,
   },
-  hostRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  hostIconBox: {
-    marginRight: 4,
-  },
-  hostIcon: {
-    fontSize: 11,
-  },
   hostName: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...typography.caption,
   },
   highlightsList: {
     paddingHorizontal: spacing.lg,
@@ -526,6 +518,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: spacing.md,
     alignItems: 'center',
+    ...shadows.sm,
   },
   clipThumbWrapper: {
     width: 115,
@@ -533,15 +526,15 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#090D16',
   },
   clipThumb: {
     width: '100%',
     height: '100%',
   },
   clipThumbOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(9, 13, 22, 0.35)',
   },
   clipPlayCircle: {
     position: 'absolute',
@@ -551,25 +544,20 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(9, 13, 22, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  clipPlayArrow: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    marginLeft: 2,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   clipDurationBadge: {
     position: 'absolute',
     bottom: 4,
     right: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(9, 13, 22, 0.85)',
     paddingHorizontal: 5,
     paddingVertical: 1.5,
-    borderRadius: 3,
+    borderRadius: borderRadius.xs,
   },
   clipDurationText: {
     color: '#FFFFFF',
@@ -588,34 +576,32 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   clipCategoryText: {
+    ...typography.badge,
     fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
   hdLabel: {
     fontSize: 9,
     fontWeight: '800',
     borderWidth: 0.5,
-    borderColor: '#475569',
     paddingHorizontal: 4,
     borderRadius: 2,
   },
   clipTitleText: {
+    ...typography.cardTitle,
     fontSize: 13,
-    fontWeight: '700',
     lineHeight: 18,
     marginBottom: 4,
   },
   clipFooterRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   clipMetaText: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...typography.caption,
   },
   clipDotSeparator: {
-    marginHorizontal: 4,
+    marginHorizontal: 2,
     fontSize: 11,
   },
   loadingBox: {

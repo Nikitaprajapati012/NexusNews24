@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { borderRadius, spacing } from '../../theme/spacing';
+import { SearchIcon } from '../icons/TabIcons';
 
 interface Props {
   value: string;
@@ -22,7 +23,9 @@ export const SearchBar: React.FC<Props> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
-      <Text style={styles.searchIcon}>🔍</Text>
+      <View style={styles.searchIconWrapper}>
+        <SearchIcon color={colors.textSecondary} size={18} />
+      </View>
       <TextInput
         style={[styles.input, { color: colors.textPrimary }]}
         value={value}
@@ -33,7 +36,11 @@ export const SearchBar: React.FC<Props> = ({
         returnKeyType="search"
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={onClear} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity
+          onPress={onClear}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
+        >
           <View style={[styles.clearBtn, { backgroundColor: colors.textMuted }]}>
             <Text style={styles.clearText}>✕</Text>
           </View>
@@ -48,12 +55,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.pill,
     borderWidth: 1,
-    height: 46,
+    height: 44,
   },
-  searchIcon: {
-    fontSize: 16,
+  searchIconWrapper: {
     marginRight: spacing.sm,
   },
   input: {

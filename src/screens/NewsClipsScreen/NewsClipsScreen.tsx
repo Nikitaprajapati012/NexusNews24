@@ -7,15 +7,17 @@ import {
   TouchableOpacity,
   Image,
   Share,
-  SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/common/AppHeader';
 import { ClipPlayer } from '../../components/video/ClipPlayer';
 import { RecordedClip, RECORDED_CLIPS } from '../../data/clipsData';
 import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { PlayIcon, ShareIcon } from '../../components/icons/TabIcons';
 
 interface Props {
   route?: {
@@ -50,7 +52,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [route?.params?.clipId]);
 
   useEffect(() => {
     const targetId = route?.params?.clipId;
@@ -72,7 +74,9 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
         message: `${clip.title}\n\nWatch this special report on Nexus News 24:\n${clip.description}`,
         title: clip.title,
       });
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   };
 
   return (
@@ -91,7 +95,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
           {/* Active Clip Player Section */}
           <View style={styles.playerContainer}>
             <ClipPlayer clip={selectedClip} />
-            <View style={[styles.activeClipDetails, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.activeClipDetails, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
               <View style={styles.titleRow}>
                 <View style={styles.titleTextContainer}>
                   <Text style={[styles.nowPlayingLabel, { color: colors.accent }]}>
@@ -102,11 +106,11 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.shareBtn, { backgroundColor: colors.surfaceVariant }]}
+                  style={[styles.shareBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.cardBorder }]}
                   onPress={() => handleShareClip(selectedClip)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.shareIcon}>🔗</Text>
+                  <ShareIcon color={colors.textPrimary} size={15} />
                 </TouchableOpacity>
               </View>
               <Text style={[styles.activeDesc, { color: colors.textSecondary }]}>
@@ -114,7 +118,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
               </Text>
               <View style={styles.metaRow}>
                 <Text style={[styles.metaText, { color: colors.textMuted }]}>
-                  👁️ {selectedClip.views} • ⏱️ {selectedClip.duration} • 📅 {selectedClip.publishedAt}
+                  {selectedClip.views} views • {selectedClip.duration} • {selectedClip.publishedAt}
                 </Text>
               </View>
             </View>
@@ -136,7 +140,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
                       },
                     ]}
                     onPress={() => setSelectedCat(cat)}
-                    activeOpacity={0.8}
+                    activeOpacity={0.75}
                   >
                     <Text
                       style={[
@@ -170,7 +174,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
                       borderColor: isPlayingThis ? colors.accent : colors.cardBorder,
                     },
                   ]}
-                  activeOpacity={0.85}
+                  activeOpacity={0.8}
                   onPress={() => setSelectedClip(clip)}
                 >
                   <View style={styles.thumbWrapper}>
@@ -179,7 +183,7 @@ export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
                       <Text style={styles.durationText}>{clip.duration}</Text>
                     </View>
                     <View style={styles.playIconOverlay}>
-                      <Text style={styles.playArrow}>▶</Text>
+                      <PlayIcon color="#FFFFFF" size={11} />
                     </View>
                   </View>
 
@@ -228,13 +232,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   playerContainer: {
-    padding: spacing.md,
+    padding: spacing.lg,
   },
   activeClipDetails: {
     padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.sm,
-    borderBottomWidth: 1,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    ...shadows.sm,
   },
   titleRow: {
     flexDirection: 'row',
@@ -246,79 +251,81 @@ const styles = StyleSheet.create({
     paddingRight: spacing.sm,
   },
   nowPlayingLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-    marginBottom: 2,
+    ...typography.badge,
+    fontSize: 9.5,
+    marginBottom: 4,
   },
   activeTitle: {
+    ...typography.heroHeadline,
     fontSize: 16,
-    fontWeight: '800',
     lineHeight: 22,
+    marginBottom: 4,
   },
   shareBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  shareIcon: {
-    fontSize: 16,
-  },
   activeDesc: {
-    fontSize: 13,
+    ...typography.cardSubtitle,
     lineHeight: 18,
-    marginTop: 6,
+    marginBottom: spacing.sm,
   },
   metaRow: {
-    marginTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
     paddingTop: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(150,150,150,0.2)',
   },
   metaText: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...typography.caption,
   },
   categoryBar: {
-    paddingVertical: spacing.xs,
+    marginBottom: spacing.md,
   },
   categoryScroll: {
-    paddingHorizontal: spacing.lg,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.sm,
   },
   catChip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: borderRadius.full,
+    paddingVertical: 7,
+    borderRadius: borderRadius.pill,
     borderWidth: 1,
     marginRight: spacing.sm,
+    ...shadows.sm,
   },
   catChipText: {
-    fontSize: 12,
-    fontWeight: '700',
+    ...typography.badge,
+    fontSize: 11,
   },
   clipsListSection: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   sectionTitle: {
+    ...typography.sectionTitle,
     fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: 0.5,
     marginBottom: spacing.md,
   },
   clipCard: {
     flexDirection: 'row',
+    padding: spacing.sm,
     borderRadius: borderRadius.lg,
-    borderWidth: 1.5,
-    overflow: 'hidden',
+    borderWidth: 1,
     marginBottom: spacing.md,
+    alignItems: 'center',
     ...shadows.sm,
   },
   thumbWrapper: {
-    width: 120,
-    height: 100,
+    width: 110,
+    height: 78,
+    borderRadius: borderRadius.sm,
+    overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#090D16',
   },
   clipThumb: {
     width: '100%',
@@ -326,83 +333,84 @@ const styles = StyleSheet.create({
   },
   durationTag: {
     position: 'absolute',
-    bottom: 6,
-    right: 6,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(9, 13, 22, 0.85)',
     paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 3,
+    paddingVertical: 1.5,
+    borderRadius: borderRadius.xs,
   },
   durationText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
   },
   playIconOverlay: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -14,
-    marginLeft: -14,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    marginTop: -12,
+    marginLeft: -12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  playArrow: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    marginLeft: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingLeft: 2,
   },
   clipContent: {
     flex: 1,
-    padding: spacing.sm + 2,
-    justifyContent: 'space-between',
+    marginLeft: spacing.md,
+    justifyContent: 'center',
   },
   clipBadgeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
   },
   categoryLabel: {
-    fontSize: 10,
-    fontWeight: '800',
+    ...typography.badge,
+    fontSize: 9,
   },
   playingNowBadge: {
     backgroundColor: '#DC2626',
     paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 3,
+    paddingVertical: 1.5,
+    borderRadius: borderRadius.xs,
   },
   playingNowText: {
     color: '#FFFFFF',
     fontSize: 8,
     fontWeight: '900',
+    letterSpacing: 0.5,
   },
   clipTitle: {
+    ...typography.cardTitle,
     fontSize: 13,
-    fontWeight: '700',
     lineHeight: 18,
+    marginBottom: 2,
   },
   clipDescription: {
-    fontSize: 11,
+    ...typography.caption,
     lineHeight: 15,
+    marginBottom: 4,
   },
   clipMeta: {
+    ...typography.caption,
     fontSize: 10,
-    fontWeight: '500',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
+    padding: spacing.xxl,
     alignItems: 'center',
-    padding: spacing.xl,
+    justifyContent: 'center',
   },
   loadingText: {
     marginTop: spacing.md,
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.body,
   },
 });

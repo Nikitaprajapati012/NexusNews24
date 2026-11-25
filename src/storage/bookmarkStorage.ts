@@ -7,7 +7,7 @@ export const getBookmarkedIds = async (): Promise<string[]> => {
     const raw = await AsyncStorage.getItem(BOOKMARKS_KEY);
     if (!raw) return [];
     return JSON.parse(raw);
-  } catch (e) {
+  } catch {
     return [];
   }
 };
@@ -31,7 +31,7 @@ export const toggleBookmark = async (id: string): Promise<boolean> => {
     }
     await AsyncStorage.setItem(BOOKMARKS_KEY, JSON.stringify(updated));
     return bookmarked;
-  } catch (e) {
+  } catch {
     return false;
   }
 };
