@@ -20,7 +20,7 @@ export const SHORT_NEWS_FEED: ShortNewsItem[] = [
     likes: '142K',
     comments: '3.8K',
     videoSource: {
-      uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+      uri: 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=1000&q=80',
@@ -35,7 +35,7 @@ export const SHORT_NEWS_FEED: ShortNewsItem[] = [
     likes: '98K',
     comments: '2.1K',
     videoSource: {
-      uri: 'https://c.mjh.nz/abc-news.m3u8',
+      uri: 'https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/2774c390ad884e06a7b0257c8489e23d/index.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1000&q=80',
@@ -65,7 +65,7 @@ export const SHORT_NEWS_FEED: ShortNewsItem[] = [
     likes: '189K',
     comments: '4.2K',
     videoSource: {
-      uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv.360p.mpeg4.mov',
+      uri: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1000&q=80',
@@ -80,7 +80,7 @@ export const SHORT_NEWS_FEED: ShortNewsItem[] = [
     likes: '310K',
     comments: '6.7K',
     videoSource: {
-      uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/3f/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv.360p.mpeg4.mov',
+      uri: 'https://abpmitv.akamaized.net/hls/live/2042842/abpnews/master.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1519074069444-1ba4ea16e6f4?w=1000&q=80',

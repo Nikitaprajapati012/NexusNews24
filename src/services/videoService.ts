@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RecordedClip } from '../data/clipsData';
-import { ShortNewsItem } from '../data/shortsData';
+import { RecordedClip, RECORDED_CLIPS } from '../data/clipsData';
+import { ShortNewsItem, SHORT_NEWS_FEED } from '../data/shortsData';
 import { fetchLiveNewsByCategory } from './newsService';
 
 const STORAGE_KEY_CLIPS = '@nexus_live_clips';
@@ -9,24 +9,28 @@ const STORAGE_KEY_SHORTS = '@nexus_live_shorts';
 // Verified, high-availability public news and documentary streams
 const STREAM_SOURCES = [
   {
-    uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+    uri: 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8',
     channel: 'DW News 24/7 Live',
+  },
+  {
+    uri: 'https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/2774c390ad884e06a7b0257c8489e23d/index.m3u8',
+    channel: 'Bharat24 Live Feed',
+  },
+  {
+    uri: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8',
+    channel: 'TRT World Live 24/7',
+  },
+  {
+    uri: 'https://abpmitv.akamaized.net/hls/live/2042842/abpnews/master.m3u8',
+    channel: 'ABP News Live',
+  },
+  {
+    uri: 'https://d2lk5u59tns74c.cloudfront.net/out/v1/75f3183e143240a29fbddd502a6a3f8d/index.m3u8',
+    channel: 'Good News Today Live',
   },
   {
     uri: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8',
     channel: 'NASA Science Live',
-  },
-  {
-    uri: 'https://c.mjh.nz/abc-news.m3u8',
-    channel: 'ABC News Live',
-  },
-  {
-    uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv.360p.mpeg4.mov',
-    channel: 'SpaceX Mission Feed',
-  },
-  {
-    uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/3f/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv.360p.mpeg4.mov',
-    channel: 'Aerospace Broadcast',
   },
 ];
 
@@ -137,7 +141,7 @@ export const fetchLiveClips = async (): Promise<RecordedClip[]> => {
     if (raw) return JSON.parse(raw);
   } catch {}
 
-  return [];
+  return RECORDED_CLIPS;
 };
 
 /**
@@ -174,5 +178,5 @@ export const fetchLiveShorts = async (): Promise<ShortNewsItem[]> => {
     if (raw) return JSON.parse(raw);
   } catch {}
 
-  return [];
+  return SHORT_NEWS_FEED;
 };

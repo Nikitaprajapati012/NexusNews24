@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius } from '../../theme/spacing';
 import { formatCurrentDate } from '../../utils/dateFormatter';
+import { SearchIcon, BellIcon } from '../icons/TabIcons';
 
 interface Props {
   showDate?: boolean;
@@ -53,20 +54,20 @@ export const AppHeader: React.FC<Props> = ({ showDate = true }) => {
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant }]}
+            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Search')}
           >
-            <Text style={styles.actionIcon}>🔍</Text>
+            <SearchIcon color={colors.textPrimary} size={18} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant }]}
+            style={[styles.actionBtn, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Notifications')}
           >
-            <Text style={styles.actionIcon}>🔔</Text>
-            <View style={styles.notificationDot} />
+            <BellIcon color={colors.textPrimary} size={18} />
+            <View style={[styles.notificationDot, { borderColor: colors.surfaceVariant }]} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,

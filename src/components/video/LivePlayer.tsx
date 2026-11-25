@@ -7,10 +7,12 @@ import { getLiveBroadcastTime } from '../../utils/dateFormatter';
 import { spacing } from '../../theme/spacing';
 
 const LIVE_STREAM_SOURCES = [
-  { uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8' },
+  { uri: 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8' },
+  { uri: 'https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/2774c390ad884e06a7b0257c8489e23d/index.m3u8' },
+  { uri: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8' },
+  { uri: 'https://abpmitv.akamaized.net/hls/live/2042842/abpnews/master.m3u8' },
+  { uri: 'https://d2lk5u59tns74c.cloudfront.net/out/v1/75f3183e143240a29fbddd502a6a3f8d/index.m3u8' },
   { uri: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8' },
-  { uri: 'https://c.mjh.nz/abc-news.m3u8' },
-  { uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv.360p.mpeg4.mov' },
 ];
 
 const LOCAL_FALLBACK_VIDEO = require('../../assets/videos/live_stream.mp4');

@@ -1,15 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Dimensions, SafeAreaView, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, FlatList, SafeAreaView, ActivityIndicator, Text } from 'react-native';
 import { VerticalShortCard } from '../../components/video/VerticalShortCard';
-import { ShortNewsItem } from '../../data/shortsData';
+import { ShortNewsItem, SHORT_NEWS_FEED } from '../../data/shortsData';
 import { fetchLiveShorts } from '../../services/videoService';
 import { AppHeader } from '../../components/common/AppHeader';
 import { useTheme } from '../../theme/ThemeContext';
 
-export const ShortNewsScreen: React.FC = () => {
-  const { colors } = useTheme();
-  const [shorts, setShorts] = useState<ShortNewsItem[]>([]);
+interface Props {
+  route?: {
+    params?: {
+      index?: number;
+    };
+  };
+}
+
+export const ShortNewsScreen: React.FC<Props> = ({ route }) => {
+  const { colors, isDark } = useTheme();
+  const [shorts, setShorts] = useState<ShortNewsItem[]>(SHORT_NEWS_FEED);
   const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef<FlatList<ShortNewsItem>>(null);
+  const targetIndex = route?.params?.index;
 
   useEffect(() => {
     let active = true;
@@ -23,6 +33,15 @@ export const ShortNewsScreen: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof targetIndex === 'number' && shorts.length > targetIndex) {
+      setActiveIndex(targetIndex);
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({ index: targetIndex, animated: false });
+      }, 80);
+    }
+  }, [targetIndex, shorts.length]);
+
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index !== null) {
       setActiveIndex(viewableItems[0].index);
@@ -34,7 +53,7 @@ export const ShortNewsScreen: React.FC = () => {
   }).current;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#000000' : colors.surface }]}>
       <AppHeader showDate={false} />
       {shorts.length === 0 ? (
         <View style={styles.loadingContainer}>
@@ -43,6 +62,7 @@ export const ShortNewsScreen: React.FC = () => {
         </View>
       ) : (
         <FlatList
+          ref={flatListRef}
           data={shorts}
           keyExtractor={item => item.id}
           renderItem={({ item, index }) => (
@@ -55,6 +75,11 @@ export const ShortNewsScreen: React.FC = () => {
           removeClippedSubviews={true}
           maxToRenderPerBatch={2}
           windowSize={3}
+          onScrollToIndexFailed={info => {
+            setTimeout(() => {
+              flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
+            }, 100);
+          }}
         />
       )}
     </SafeAreaView>

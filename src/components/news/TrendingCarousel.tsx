@@ -28,7 +28,7 @@ export const TrendingCarousel: React.FC<Props> = ({ articles }) => {
         >
           <View style={styles.imageBox}>
             <Image source={article.image} style={styles.cardImage} resizeMode="cover" />
-            <View style={styles.rankBadge}>
+            <View style={[styles.rankBadge, { borderColor: colors.card }]}>
               <Text style={styles.rankNumber}>0{index + 1}</Text>
             </View>
           </View>

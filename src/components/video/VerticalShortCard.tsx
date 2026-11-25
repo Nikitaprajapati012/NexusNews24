@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Share } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Share, Image } from 'react-native';
 import Video from 'react-native-video';
 import { ShortNewsItem } from '../../data/shortsData';
 import { spacing } from '../../theme/spacing';
@@ -27,10 +27,19 @@ export const VerticalShortCard: React.FC<Props> = ({ item, isActive }) => {
   const posterUri =
     typeof item.thumbnail === 'object' && item.thumbnail?.uri
       ? item.thumbnail.uri
+      : typeof item.thumbnail === 'string'
+      ? item.thumbnail
       : undefined;
 
   return (
     <View style={styles.container}>
+      {posterUri ? (
+        <Image
+          source={{ uri: posterUri }}
+          style={styles.posterFallback}
+          resizeMode="cover"
+        />
+      ) : null}
       <Video
         source={item.videoSource}
         style={styles.video}
@@ -132,6 +141,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   video: {
+    ...StyleSheet.absoluteFill,
+  },
+  posterFallback: {
     ...StyleSheet.absoluteFill,
   },
   tapLayer: {

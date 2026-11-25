@@ -12,17 +12,27 @@ import {
 } from 'react-native';
 import { AppHeader } from '../../components/common/AppHeader';
 import { ClipPlayer } from '../../components/video/ClipPlayer';
-import { RecordedClip } from '../../data/clipsData';
+import { RecordedClip, RECORDED_CLIPS } from '../../data/clipsData';
 import { fetchLiveClips } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius, shadows } from '../../theme/spacing';
 
-export const NewsClipsScreen: React.FC = () => {
+interface Props {
+  route?: {
+    params?: {
+      clipId?: string;
+    };
+  };
+}
+
+export const NewsClipsScreen: React.FC<Props> = ({ route }) => {
   const { colors } = useTheme();
-  const [allClips, setAllClips] = useState<RecordedClip[]>([]);
-  const [selectedClip, setSelectedClip] = useState<RecordedClip | null>(null);
+  const [allClips, setAllClips] = useState<RecordedClip[]>(RECORDED_CLIPS);
+  const [selectedClip, setSelectedClip] = useState<RecordedClip | null>(
+    RECORDED_CLIPS.length > 0 ? RECORDED_CLIPS[0] : null,
+  );
   const [selectedCat, setSelectedCat] = useState<string>('All');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     let active = true;
@@ -30,7 +40,9 @@ export const NewsClipsScreen: React.FC = () => {
       if (active) {
         if (live.length > 0) {
           setAllClips(live);
-          setSelectedClip(live[0]);
+          const targetId = route?.params?.clipId;
+          const match = targetId ? live.find(c => c.id === targetId) : null;
+          setSelectedClip(match || live[0]);
         }
         setLoading(false);
       }
@@ -39,6 +51,14 @@ export const NewsClipsScreen: React.FC = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const targetId = route?.params?.clipId;
+    if (targetId && allClips.length > 0) {
+      const match = allClips.find(c => c.id === targetId);
+      if (match) setSelectedClip(match);
+    }
+  }, [route?.params?.clipId, allClips]);
 
   const categories = ['All', 'Technology', 'Business', 'National', 'Sports'];
 

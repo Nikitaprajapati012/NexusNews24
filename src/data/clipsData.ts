@@ -22,7 +22,7 @@ export const RECORDED_CLIPS: RecordedClip[] = [
     views: '482K views',
     publishedAt: '2 hours ago',
     videoSource: {
-      uri: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+      uri: 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1000&q=80',
@@ -38,7 +38,7 @@ export const RECORDED_CLIPS: RecordedClip[] = [
     views: '320K views',
     publishedAt: '4 hours ago',
     videoSource: {
-      uri: 'https://c.mjh.nz/abc-news.m3u8',
+      uri: 'https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/2774c390ad884e06a7b0257c8489e23d/index.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1000&q=80',
@@ -70,7 +70,7 @@ export const RECORDED_CLIPS: RecordedClip[] = [
     views: '1.2M views',
     publishedAt: 'Yesterday',
     videoSource: {
-      uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv/SpaceX_Falcon_9_launch_with_COTS_Demo_Flight_1_%28high_quality%29.ogv.360p.mpeg4.mov',
+      uri: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1000&q=80',
@@ -86,7 +86,7 @@ export const RECORDED_CLIPS: RecordedClip[] = [
     views: '610K views',
     publishedAt: '2 days ago',
     videoSource: {
-      uri: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/3f/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv/Flight_of_AS-506_%28Apollo_11%29_from_lift-off_to_1_min_after_S-IC_stage_separation%2C_VJSC_1425D-q1.ogv.360p.mpeg4.mov',
+      uri: 'https://d2lk5u59tns74c.cloudfront.net/out/v1/75f3183e143240a29fbddd502a6a3f8d/index.m3u8',
     },
     thumbnail: {
       uri: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=1000&q=80',

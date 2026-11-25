@@ -8,6 +8,7 @@ import {
   RefreshControl,
   SafeAreaView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../../components/common/AppHeader';
@@ -22,7 +23,7 @@ import {
   fetchLiveNewsByCategory,
   getCachedArticlesForCategory,
 } from '../../services/newsService';
-import { ShortNewsItem } from '../../data/shortsData';
+import { ShortNewsItem, SHORT_NEWS_FEED } from '../../data/shortsData';
 import { fetchLiveShorts } from '../../services/videoService';
 import { useTheme } from '../../theme/ThemeContext';
 import { spacing, borderRadius } from '../../theme/spacing';
@@ -32,7 +33,7 @@ export const HomeScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
-  const [shortsFeed, setShortsFeed] = useState<ShortNewsItem[]>([]);
+  const [shortsFeed, setShortsFeed] = useState<ShortNewsItem[]>(SHORT_NEWS_FEED);
   const [allArticles, setAllArticles] = useState<NewsArticle[]>(() =>
     getCachedArticlesForCategory('all'),
   );
@@ -199,26 +200,46 @@ export const HomeScreen: React.FC = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.shortsScroll}
           >
-            {shortsFeed.map((short, idx) => (
-              <TouchableOpacity
-                key={short.id}
-                style={styles.shortThumbCard}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate('MainTabs', { screen: 'Shorts', params: { index: idx } })}
-              >
-                <View style={styles.shortThumbBg}>
-                  <View style={styles.shortCategoryTag}>
-                    <Text style={styles.shortCategoryText}>{short.category}</Text>
+            {shortsFeed.map((short, idx) => {
+              const thumbSource =
+                typeof short.thumbnail === 'string'
+                  ? { uri: short.thumbnail }
+                  : short.thumbnail;
+
+              return (
+                <TouchableOpacity
+                  key={short.id}
+                  style={styles.shortThumbCard}
+                  activeOpacity={0.85}
+                  onPress={() =>
+                    navigation.navigate('MainTabs', {
+                      screen: 'Shorts',
+                      params: { index: idx },
+                    })
+                  }
+                >
+                  {thumbSource ? (
+                    <Image
+                      source={thumbSource}
+                      style={styles.shortThumbImage}
+                      resizeMode="cover"
+                    />
+                  ) : null}
+                  <View style={styles.shortThumbOverlay} />
+                  <View style={styles.shortThumbContent}>
+                    <View style={styles.shortCategoryTag}>
+                      <Text style={styles.shortCategoryText}>{short.category}</Text>
+                    </View>
+                    <View style={styles.playCenterCircle}>
+                      <Text style={styles.playCenterIcon}>▶</Text>
+                    </View>
+                    <Text style={styles.shortTitle} numberOfLines={2}>
+                      {short.headline}
+                    </Text>
                   </View>
-                  <View style={styles.playCenterCircle}>
-                    <Text style={styles.playCenterIcon}>▶</Text>
-                  </View>
-                  <Text style={styles.shortTitle} numberOfLines={2}>
-                    {short.headline}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -345,12 +366,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: spacing.md,
     backgroundColor: '#0F172A',
+    position: 'relative',
   },
-  shortThumbBg: {
+  shortThumbImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  shortThumbOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.48)',
+  },
+  shortThumbContent: {
     flex: 1,
     padding: spacing.sm,
     justifyContent: 'space-between',
-    backgroundColor: '#1E293B',
   },
   shortCategoryTag: {
     backgroundColor: 'rgba(220, 38, 38, 0.9)',
